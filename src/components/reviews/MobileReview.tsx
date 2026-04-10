@@ -63,8 +63,8 @@ function MobileReview() {
 
                 {/* Button */}
                 <div className="flex justify-center">
-                    <button className="bg-[#782FF8] text-white px-4 py-2 rounded-md text-sm font-medium">
-                        More reviews
+                    <button className=" border-[1.5px] border-[#782FF8] w-50.75 h-[50   px] text-[#782FF8] px-4 py-2 rounded-md text-sm font-medium">
+                        Add Review
                     </button>
                 </div>
             </div>

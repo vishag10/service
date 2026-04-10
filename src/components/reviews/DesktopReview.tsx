@@ -1,4 +1,5 @@
-import React from 'react'
+"use client";
+import React, { useState } from 'react'
 import { AiFillStar, AiOutlineStar } from "react-icons/ai";
 
 function ReviewStars({ rating }: { rating: number }) {
@@ -15,6 +16,9 @@ function ReviewStars({ rating }: { rating: number }) {
     );
 }
 function DesktopReview() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = 3;
+
   return (
     <div>
             <div className="">
@@ -82,6 +86,38 @@ function DesktopReview() {
                 </div>
 
             </div>
+
+            {/* Pagination */}
+            <div className="flex items-center justify-center mt-6 gap-4">
+                <div className="flex gap-2">
+                    {[1, 2, 3].map((page) => (
+                        <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`w-10 h-10 rounded-md text-sm font-medium border ${
+                                currentPage === page
+                                    ? "bg-purple-600 text-white border-purple-600"
+                                    : "bg-white text-gray-700 border-gray-300"
+                            }`}
+                        >
+                            {page}
+                        </button>
+                    ))}
+                </div>
+                {currentPage < totalPages && (
+                    <button
+                        onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                        className="px-4 h-10 rounded-md border border-gray-300 text-sm font-medium text-gray-700 bg-white flex items-center gap-1"
+                    >
+                        Next <span>&#8250;</span>
+                    </button>
+                )}
+            </div>
+
+            {/* Book Service Button */}
+            <button className="w-full mt-6 py-3 rounded-lg border-2 border-purple-600 text-purple-600 font-medium text-base hover:bg-purple-50 transition">
+                Book Service
+            </button>
         </div>
   )
 }
