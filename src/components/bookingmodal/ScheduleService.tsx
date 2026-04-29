@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react'
-import AddressCard from '../mobile/AddressCard'
-import DatePickerCard from '../mobile/DatePickerCard'
-import TimePicker from '../mobile/TimePicker'
-import IssueDescribe from '../mobile/IssueDescribe'
-import SocketService from '@/services/socketio/SocketService'
-import config from '@/services/socketio/config'
+import React, { useEffect } from "react";
+import AddressCard from "../mobile/AddressCard";
+import DatePickerCard from "../mobile/DatePickerCard";
+import TimePicker from "../mobile/TimePicker";
+import IssueDescribe from "../mobile/IssueDescribe";
+import SocketService from "@/services/socketio/SocketService";
+import config from "@/services/socketio/config";
 
 interface AcceptedRequest {
   providerId: string;
@@ -22,55 +22,64 @@ interface Notification {
 interface ScheduleServiceProps {
   selectedPlan: string;
   subCategoryId: string;
-  onNext: (data: { bookingDate: string; bookingTime: string; description: string }) => void;
+  onNext: (data: {
+    bookingDate: string;
+    bookingTime: string;
+    description: string;
+  }) => void;
   onBack: () => void;
 }
 
-function ScheduleService({ selectedPlan, subCategoryId, onNext, onBack }: ScheduleServiceProps) {
-  const [bookingDate, setBookingDate] = React.useState('');
-  const [bookingTime, setBookingTime] = React.useState('');
-  const [description, setDescription] = React.useState('');
-  const [connectionStatus, setConnectionStatus] = React.useState('Disconnected');
-  const [acceptedRequests, setAcceptedRequests] = React.useState<AcceptedRequest[]>([]);
+function ScheduleService({
+  selectedPlan,
+  subCategoryId,
+  onNext,
+  onBack,
+}: ScheduleServiceProps) {
+  const [bookingDate, setBookingDate] = React.useState("");
+  const [bookingTime, setBookingTime] = React.useState("");
+  const [description, setDescription] = React.useState("");
+  const [connectionStatus, setConnectionStatus] =
+    React.useState("Disconnected");
+  const [acceptedRequests, setAcceptedRequests] = React.useState<
+    AcceptedRequest[]
+  >([]);
   const [notifications, setNotifications] = React.useState<Notification[]>([]);
 
   const isFormValid = bookingDate && bookingTime && description.trim();
 
   const handleNext = () => {
     if (!isFormValid) return;
-    
+
     const data = {
       bookingDate,
       bookingTime,
-      description
+      description,
     };
-    
+
     onNext(data);
   };
 
   useEffect(() => {
-    console.log('ScheduleService config.SOCKET_URL:', config.SOCKET_URL);
     const socket = SocketService.connect(config.SOCKET_URL);
 
-    socket.on('connect', () => {
-      console.log('Connected');
-      setConnectionStatus('Connected');
+    socket.on("connect", () => {
+      setConnectionStatus("Connected");
     });
 
-    socket.on('disconnect', () => {
-      console.log('Disconnected');
-      setConnectionStatus('Disconnected');
+    socket.on("disconnect", () => {
+      setConnectionStatus("Disconnected");
     });
 
-    socket.on('requestAccepted', (data: AcceptedRequest) => {
-      setAcceptedRequests(prev => [...prev, data]);
+    socket.on("requestAccepted", (data: AcceptedRequest) => {
+      setAcceptedRequests((prev) => [...prev, data]);
       const notification = {
-        type: 'Request Accepted',
+        type: "Request Accepted",
         providerId: data.providerId,
         requestId: data.requestId,
-        timestamp: new Date(data.timestamp)
+        timestamp: new Date(data.timestamp),
       };
-      setNotifications(prev => [notification, ...prev]);
+      setNotifications((prev) => [notification, ...prev]);
     });
 
     return () => {
@@ -78,12 +87,12 @@ function ScheduleService({ selectedPlan, subCategoryId, onNext, onBack }: Schedu
     };
   }, []);
 
-  console.log('ScheduleService - Selected Plan ID:', selectedPlan);
-
   return (
     <>
-      <h1 className='font-medium text-[16px] leading-[26px] tracking-[0.01px] pt-2'>Schedule Service</h1>
-      
+      <h1 className="font-medium text-[16px] leading-[26px] tracking-[0.01px] pt-2">
+        Schedule Service
+      </h1>
+
       <div className="flex-1 overflow-y-auto">
         <div className="space-y-4 pb-4">
           {/* <AddressCard /> */}
@@ -100,18 +109,20 @@ function ScheduleService({ selectedPlan, subCategoryId, onNext, onBack }: Schedu
         >
           Back
         </button>
-        <button 
+        <button
           onClick={handleNext}
           disabled={!isFormValid}
           className={`w-[70%] h-[42px] text-white rounded-xl font-medium text-sm transition-all duration-300 ${
-            isFormValid ? 'bg-[#7722FF] hover:bg-[#6611EE]' : 'bg-gray-300 cursor-not-allowed'
+            isFormValid
+              ? "bg-[#7722FF] hover:bg-[#6611EE]"
+              : "bg-gray-300 cursor-not-allowed"
           }`}
         >
           Next
         </button>
       </div>
     </>
-  )
+  );
 }
 
-export default ScheduleService
+export default ScheduleService;

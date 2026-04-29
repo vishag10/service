@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 function AuthContent() {
     const searchParams = useSearchParams()
     const refreshToken = searchParams.get('refreshtoken')||localStorage.getItem('refreshtoken')
-    // const refreshToken = '44708a6e2f3644bc548ba993be70edb9f4965776c3d40ea1477c3b40010069502c83bd013c76f29b'
+    // const refreshToken = 'c1c5549afadf481637bc4f2c41d4a1294b5d148e413378f78ed1690f8ae112446959b95347a11534'
     const country = searchParams.get('country')
     const lat = searchParams.get('lat')
     const lon = searchParams.get('lon')
@@ -69,7 +69,6 @@ function AuthContent() {
                     }
                 }
             } catch (error) {
-                console.error('Auth error:', error)
                 if (typeof window !== 'undefined') {
                     window.location.href = 'https://www.seclob.com/login'
                 }

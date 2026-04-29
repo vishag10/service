@@ -128,13 +128,11 @@ function DeskTop({ id }: DesktopProps) {
     try {
       if (typeof uniqueId === "string") {
         const res = await serviceDeatil(uniqueId);
-        console.log("Service Details:", res);
         if (res?.success) {
           setService(res);
         }
       }
     } catch (error) {
-      console.error("Error fetching package details:", error);
     }
   };
 
@@ -148,7 +146,6 @@ function DeskTop({ id }: DesktopProps) {
         localStorage.setItem('PlanPriority', res.data.priority.toString());
       }
     } catch (error) {
-      console.error("Error fetching current package:", error);
     } finally {
       setIsLoadingPackage(false);
     }
@@ -158,12 +155,6 @@ function DeskTop({ id }: DesktopProps) {
     handleGetDetails();
   }, [uniqueId]);
 
-  useEffect(() => {
-    if (service) {
-      console.log("Service state updated:", service);
-      console.log("Service name:", service.data.subCategories[0].name);
-    }
-  }, [service]);
 
   // Show premium upsell modal after 10s if current plan is Normal (priority 3)
   useEffect(() => {

@@ -5,6 +5,7 @@ import React, { useState } from 'react'
 import PhoneInput from 'react-phone-input-2'
 import 'react-phone-input-2/lib/style.css'
 import { showToast } from '@/utils/toast'
+import { getErrorMessage } from '@/services/ErrorHandle'
 
 function Partnersearch() {
   const [formData, setFormData] = useState({
@@ -33,7 +34,7 @@ function Partnersearch() {
       showToast({
         type: 'error',
         title: 'Error!',
-        message: 'Failed to submit form. Please try again.'
+        message: getErrorMessage(error)
       });
     }
   }

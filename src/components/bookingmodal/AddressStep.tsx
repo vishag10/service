@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import AddressCard from '../mobile/AddressCard';
 import { useRouter } from 'next/navigation'
 import { requestProvider } from '@/services/commonapi/commonApi'
+import { showToast } from '@/utils/toast';
+import { getErrorMessage } from '@/services/ErrorHandle';
 
 interface AddressStepProps {
   selectedPlan: string;
@@ -63,20 +65,16 @@ function AddressStep({ selectedPlan, subCategoryId, bookingData, onNext, onBack 
     
     try {
       const res = await requestProvider(data);
-      console.log('Request Provider Response:', res);
       const id = res.data.bookingId;
-      console.log('Request Provider Response book id:', id);
       if (res.success) {
         router.push(`/timecountdown/${id}`);
       }
     } catch (error: unknown) {
-      const axiosError = error as { response?: { status?: number; data?: unknown } };
-      console.error('Request Provider Error:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        status: axiosError.response?.status,
-        data: axiosError.response?.data,
-        requestData: data
-      });
+      showToast({
+              type: "error",
+              title: "Error",
+              message: getErrorMessage(error),
+            });
     } finally {
       setIsLoading(false);
     }

@@ -1,8 +1,10 @@
-'use client'
-import React, { useEffect, useState } from 'react'
-import { getUserAddress, getUserDeatils } from '@/services/commonapi/commonApi'
-import { FaHome, FaBriefcase, FaPlusCircle, FaPlus } from 'react-icons/fa'
-import { IoClose, IoLocationSharp } from 'react-icons/io5'
+"use client";
+import React, { useEffect, useState } from "react";
+import { getUserAddress, getUserDeatils } from "@/services/commonapi/commonApi";
+import { FaHome, FaBriefcase, FaPlusCircle, FaPlus } from "react-icons/fa";
+import { IoClose, IoLocationSharp } from "react-icons/io5";
+import { showToast } from "@/utils/toast";
+import { getErrorMessage } from "@/services/ErrorHandle";
 
 interface Address {
   _id: string;
@@ -38,8 +40,8 @@ function DesktopAddressStep({ onOk }: Props) {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeType, setActiveType] = useState<number | null>(null);
-  const [userName, setUserName] = useState('');
-  const [userSubtext, setUserSubtext] = useState('');
+  const [userName, setUserName] = useState("");
+  const [userSubtext, setUserSubtext] = useState("");
   const [showList, setShowList] = useState(false);
 
   useEffect(() => {
@@ -51,15 +53,20 @@ function DesktopAddressStep({ onOk }: Props) {
         ]);
         if (addrRes?.success && addrRes.data?.length) {
           setAddresses(addrRes.data);
-          const def = addrRes.data.find((a: Address) => a.isDefault) || addrRes.data[0];
+          const def =
+            addrRes.data.find((a: Address) => a.isDefault) || addrRes.data[0];
           setSelectedId(def._id);
           setUserSubtext(`${def.HouseNo}, ${def.RoadName}...`);
         }
         if (userRes?.success) {
-          setUserName(userRes.data?.name || userRes.data?.firstName || 'User');
+          setUserName(userRes.data?.name || userRes.data?.firstName || "User");
         }
       } catch (e) {
-        console.error(e);
+        showToast({
+          type: "error",
+          title: "Error",
+          message: getErrorMessage(e),
+        });
       }
     };
     fetchData();
@@ -72,17 +79,23 @@ function DesktopAddressStep({ onOk }: Props) {
 
   const getTypeIcon = (type: number) => {
     switch (type) {
-      case 1: return <FaHome size={30} />;
-      case 2: return <FaBriefcase size={30} />;
-      default: return <FaHome size={30} />;
+      case 1:
+        return <FaHome size={30} />;
+      case 2:
+        return <FaBriefcase size={30} />;
+      default:
+        return <FaHome size={30} />;
     }
   };
 
   const getTypeLabel = (type: number) => {
     switch (type) {
-      case 1: return 'Home';
-      case 2: return 'Office';
-      default: return `Type ${type}`;
+      case 1:
+        return "Home";
+      case 2:
+        return "Office";
+      default:
+        return `Type ${type}`;
     }
   };
 
@@ -101,13 +114,13 @@ function DesktopAddressStep({ onOk }: Props) {
     });
   };
 
-  const typeLabel = activeType !== null ? getTypeLabel(activeType) : 'Home';
+  const typeLabel = activeType !== null ? getTypeLabel(activeType) : "Home";
 
   const handleTypeSelect = (type: number) => {
     const newType = activeType === type ? null : type;
     setActiveType(newType);
     if (newType !== null) {
-      const filtered = addresses.filter(a => a.type === newType);
+      const filtered = addresses.filter((a) => a.type === newType);
       if (filtered.length > 0) {
         setSelectedId(filtered[0]._id);
         setUserSubtext(`${filtered[0].HouseNo}, ${filtered[0].RoadName}...`);
@@ -120,79 +133,93 @@ function DesktopAddressStep({ onOk }: Props) {
 
   return (
     <div className="w-[90vw] max-w-[800px] bg-[#1AA45B] rounded-2xl overflow-hidden shadow-2xl">
-  {/* Green header section */}
-  <div className="w-[85%] lg:w-[80%] mx-auto mt-10 lg:mt-16 mb-2 relative">
-    {/* Close button - circle outline */}
-    <button className="absolute top-4 right-4 w-[24px] h-[24px] rounded-full border-2 border-white bg-transparent" />
+      {/* Green header section */}
+      <div className="w-[85%] lg:w-[80%] mx-auto mt-10 lg:mt-16 mb-2 relative">
+        {/* Close button - circle outline */}
+        <button className="absolute top-4 right-4 w-[24px] h-[24px] rounded-full border-2 border-white bg-transparent" />
 
-    {/* User info */}
-    <div className="flex items-center gap-3.5">
-      <div className=" flex items-center justify-center">
-        <IoLocationSharp size={46} className="text-white" />
-      </div>
-      <div>
-        <p className="font-bold text-white text-[18px] leading-tight">{userName}</p>
-        <p className="text-white/75 text-sm mt-0.5">{userSubtext || 'Select an address'}</p>
-      </div>
-    </div>
-  </div>
-
-  {/* White bottom card */}
-  <div className="bg-white w-[85%] lg:w-[80%] mx-auto rounded-xl px-4 lg:px-6 pt-5 lg:pt-7 pb-4 lg:pb-6 mb-6">
-    {/* Type icons row */}
-    <div className="flex items-start justify-center mb-7">
-      {availableTypes.map((type, idx) => (
-        <button
-          key={type}
-          onClick={() => handleTypeSelect(type)}
-          className={`flex-1 flex flex-col items-center cursor-pointer gap-2.5 px-3 ${
-            idx < availableTypes.length - 1 ? 'border-r border-gray-200' : ''
-          }`}
-        >
-          <div className={`w-[60px] h-[60px] lg:w-[76px] lg:h-[76px] rounded-full bg-gray-100 flex items-center justify-center transition ${
-            activeType === type ? 'text-[#782FF8]' : ' text-gray-900'
-          }`}>
-            {getTypeIcon(type)}
+        {/* User info */}
+        <div className="flex items-center gap-3.5">
+          <div className=" flex items-center justify-center">
+            <IoLocationSharp size={46} className="text-white" />
           </div>
-          <span className={`text-sm font-medium transition ${
-            activeType === type ? 'text-[#782FF8]' : 'text-gray-900'
-          }`}>{getTypeLabel(type)}</span>
-        </button>
-      ))}
-
-      {/* Add New */}
-      <button className="flex-1 flex flex-col items-center gap-2.5 px-3">
-        <div className="w-[60px] h-[60px] lg:w-[76px] lg:h-[76px] rounded-full bg-gray-100 flex items-center justify-center">
-          <div className="w-9 h-9 rounded-full bg-gray-900 flex items-center justify-center">
-            <FaPlus size={25} className="text-white" />
+          <div>
+            <p className="font-bold text-white text-[18px] leading-tight">
+              {userName}
+            </p>
+            <p className="text-white/75 text-sm mt-0.5">
+              {userSubtext || "Select an address"}
+            </p>
           </div>
         </div>
-        <span className="text-sm font-medium text-gray-900">Add New</span>
-      </button>
-    </div>
+      </div>
 
-    {/* Button - shows Next when type selected, otherwise Add Address */}
-    {activeType !== null ? (
-      <button
-        onClick={handleOk}
-        disabled={!selectedId}
-        className={`w-full py-4 rounded-xl text-[15px] font-semibold cursor-pointer transition ${
-          selectedId ? 'bg-[#782FF8] hover:bg-[#6611EE] text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-        }`}
-      >
-        Next
-      </button>
-    ) : (
-      <button
-        onClick={() => setShowList(!showList)}
-        className="w-full py-4 bg-[#782FF8] hover:bg-[#6611EE] text-white rounded-xl text-[15px] font-semibold transition"
-      >
-        Add {typeLabel} Address
-      </button>
-    )}
-  </div>
-</div>
+      {/* White bottom card */}
+      <div className="bg-white w-[85%] lg:w-[80%] mx-auto rounded-xl px-4 lg:px-6 pt-5 lg:pt-7 pb-4 lg:pb-6 mb-6">
+        {/* Type icons row */}
+        <div className="flex items-start justify-center mb-7">
+          {availableTypes.map((type, idx) => (
+            <button
+              key={type}
+              onClick={() => handleTypeSelect(type)}
+              className={`flex-1 flex flex-col items-center cursor-pointer gap-2.5 px-3 ${
+                idx < availableTypes.length - 1
+                  ? "border-r border-gray-200"
+                  : ""
+              }`}
+            >
+              <div
+                className={`w-[60px] h-[60px] lg:w-[76px] lg:h-[76px] rounded-full bg-gray-100 flex items-center justify-center transition ${
+                  activeType === type ? "text-[#782FF8]" : " text-gray-900"
+                }`}
+              >
+                {getTypeIcon(type)}
+              </div>
+              <span
+                className={`text-sm font-medium transition ${
+                  activeType === type ? "text-[#782FF8]" : "text-gray-900"
+                }`}
+              >
+                {getTypeLabel(type)}
+              </span>
+            </button>
+          ))}
+
+          {/* Add New */}
+          <button className="flex-1 flex flex-col items-center gap-2.5 px-3">
+            <div className="w-[60px] h-[60px] lg:w-[76px] lg:h-[76px] rounded-full bg-gray-100 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-full bg-gray-900 flex items-center justify-center">
+                <FaPlus size={25} className="text-white" />
+              </div>
+            </div>
+            <span className="text-sm font-medium text-gray-900">Add New</span>
+          </button>
+        </div>
+
+        {/* Button - shows Next when type selected, otherwise Add Address */}
+        {activeType !== null ? (
+          <button
+            onClick={handleOk}
+            disabled={!selectedId}
+            className={`w-full py-4 rounded-xl text-[15px] font-semibold cursor-pointer transition ${
+              selectedId
+                ? "bg-[#782FF8] hover:bg-[#6611EE] text-white"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+            }`}
+          >
+            Next
+          </button>
+        ) : (
+          <button
+            onClick={() => setShowList(!showList)}
+            className="w-full py-4 bg-[#782FF8] hover:bg-[#6611EE] text-white rounded-xl text-[15px] font-semibold transition"
+          >
+            Add {typeLabel} Address
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
-export default DesktopAddressStep
+export default DesktopAddressStep;

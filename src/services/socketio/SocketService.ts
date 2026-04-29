@@ -11,18 +11,14 @@ class SocketService {
   }
 
   connect(serverUrl = config.SOCKET_URL) {
-    console.log('Connecting to:', serverUrl);
-    console.log('Config SOCKET_URL:', config.SOCKET_URL);
     this.socket = io(serverUrl);
 
     this.socket.on('connect', () => {
       this.isConnected = true;
-      console.log('Connected to server:', serverUrl);
     });
 
 this.socket.on('disconnect', () => {
   this.isConnected = false;
-  console.log('Disconnected from server');
 });
 
 return this.socket;

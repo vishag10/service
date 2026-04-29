@@ -11,6 +11,8 @@ import Refer from "../mobile/Refer";
 import Mobilefooter from "../footer/Mobilefooter";
 import { onSearch } from "@/services/commonapi/commonApi";
 import OffersDeals from "../mobile/OffersDeals";
+import { showToast } from "@/utils/toast";
+import { getErrorMessage } from "@/services/ErrorHandle";
 
 interface SearchCategory {
   id: string;
@@ -34,12 +36,12 @@ interface SearchResults {
 const MobileLanding = () => {
   const [searchInput, setSearchInput] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResults | null>(
-    null
+    null,
   );
   const [openIndex, setOpenIndex] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
-    null
+    null,
   );
   const searchRef = useRef<HTMLDivElement>(null);
   const faqs = [
@@ -112,7 +114,11 @@ const MobileLanding = () => {
       setSearchResults(res.data);
       setShowDropdown(true);
     } catch (error) {
-      console.error("Search error:", error);
+      showToast({
+        type: "error",
+        title: "Error",
+        message: getErrorMessage(error),
+      });
     }
   };
 

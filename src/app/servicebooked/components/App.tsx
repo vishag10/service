@@ -21,7 +21,6 @@ function App() {
         if (!bookingId) return;
         const res = await getBookingDetails(bookingId);
         if (res?.success) {
-          console.log(res)
           setBookingStatus(res?.data)
         }
 

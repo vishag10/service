@@ -658,9 +658,6 @@ function SignupPageContent() {
                           handleGoogleSignUp(userDetails)
                         }
                       }}
-                      onError={() => {
-                        console.error('Google Login Failed')
-                      }}
                     />
 
                     <button className="flex py-[19px] border justify-center cursor-pointer items-center w-10 md:h-10 h-8 md:w-1/3 gap-3 text-lg border-gray-300 rounded-md">

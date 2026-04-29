@@ -7,7 +7,6 @@ import { RootState } from "@/redux/store";
 const baseURL = "https://apigateway.seclob.com/";
 
 const createAxiosInstance = (): AxiosInstance => {
-  console.log('Creating axios instance with baseURL:', baseURL);
   
   const instance = axios.create({
     baseURL,

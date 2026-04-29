@@ -22,7 +22,6 @@ interface AppProps {
 }
 
 function App({ id }: AppProps) {
-  // console.log('App component - Booking ID:', id)
   const router = useRouter();
   const dispatch = useDispatch();
   const totalTime = 180;
@@ -74,26 +73,22 @@ function App({ id }: AppProps) {
 
   useEffect(() => {
     // Connect to Socket.IO server
-    console.log('App.js config.SOCKET_URL:', config.SOCKET_URL);
     const socket = socketService.connect(config.SOCKET_URL);
 
 
     socket.on('connect', () => {
-      console.log('Connected');
       setConnectionStatus('Connected');
       const customerId = localStorage.getItem('userId');
       socket.emit('joinCustomerRoom', customerId);
     });
 
     socket.on('disconnect', () => {
-      console.log('Disconnected');
       setConnectionStatus('Disconnected');
     });
 
 
     // Listen for request acceptance
      socket.on('requestAccepted', (data: AcceptedRequest) => {
-          console.log('requestAccepted time:', data);
           dispatch(setAcceptedRequest(data));
           setAcceptedRequests(prev => [...prev, data]);
           const notification = {

@@ -1,4 +1,6 @@
 import { getUserAddress } from "@/services/commonapi/commonApi";
+import { getErrorMessage } from "@/services/ErrorHandle";
+import { showToast } from "@/utils/toast";
 import React, { useEffect, useState } from "react";
 import { FaHome, FaBuilding } from "react-icons/fa";
 import { FiEdit2 } from "react-icons/fi";
@@ -18,12 +20,14 @@ interface Address {
 }
 
 interface AddressCardProps {
-  onAddressSelect?: (address: Omit<Address, '_id' | 'isDefault'>) => void;
+  onAddressSelect?: (address: Omit<Address, "_id" | "isDefault">) => void;
 }
 
 const AddressCard: React.FC<AddressCardProps> = ({ onAddressSelect }) => {
   const [addresses, setAddresses] = useState<Address[]>([]);
-  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
+    null,
+  );
 
   const handlegetAddress = async () => {
     try {
@@ -32,19 +36,23 @@ const AddressCard: React.FC<AddressCardProps> = ({ onAddressSelect }) => {
         setAddresses(res.data);
       }
     } catch (error) {
-      console.error("Error fetching addresses:", error);
+      showToast({
+        type: "error",
+        title: "Error",
+        message: getErrorMessage(error),
+      });
     }
-  }
+  };
 
   useEffect(() => {
-    handlegetAddress()
-  }, [])
+    handlegetAddress();
+  }, []);
 
   return (
     <div className="w-[90%] mx-auto max-h-96 overflow-y-auto space-y-4">
       {addresses.map((address) => (
-        <div 
-          key={address._id} 
+        <div
+          key={address._id}
           onClick={() => {
             setSelectedAddressId(address._id);
             onAddressSelect?.({
@@ -56,21 +64,25 @@ const AddressCard: React.FC<AddressCardProps> = ({ onAddressSelect }) => {
               zip: address.zip,
               HouseNo: address.HouseNo,
               RoadName: address.RoadName,
-              type: address.type
+              type: address.type,
             });
           }}
           className={`border rounded-2xl p-4 shadow-sm bg-white flex flex-col gap-2 relative cursor-pointer transition-all duration-200 ${
-            selectedAddressId === address._id 
-              ? 'border-purple-500 bg-purple-50' 
-              : 'border-gray-200 hover:border-purple-300'
+            selectedAddressId === address._id
+              ? "border-purple-500 bg-purple-50"
+              : "border-gray-200 hover:border-purple-300"
           }`}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h2 className="font-medium text-gray-800">{address.name}</h2>
               <span className="flex items-center gap-1 text-purple-600 text-xs border border-purple-400 px-2 py-0.5 rounded-full">
-                {address.type === 1 ? <FaHome size={12} /> : <FaBuilding size={12} />}
-                {address.type === 1 ? 'Home' : 'Building'}
+                {address.type === 1 ? (
+                  <FaHome size={12} />
+                ) : (
+                  <FaBuilding size={12} />
+                )}
+                {address.type === 1 ? "Home" : "Building"}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -86,7 +98,8 @@ const AddressCard: React.FC<AddressCardProps> = ({ onAddressSelect }) => {
           </div>
           <p className="text-sm text-gray-500">{address.phone}</p>
           <p className="text-sm text-gray-500">
-            {address.HouseNo}, {address.RoadName}, {address.city}, {address.state}, {address.country} - {address.zip}
+            {address.HouseNo}, {address.RoadName}, {address.city},{" "}
+            {address.state}, {address.country} - {address.zip}
           </p>
         </div>
       ))}

@@ -1,12 +1,23 @@
-'use client'
-import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { requestProvider } from '@/services/commonapi/commonApi'
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, getDay, startOfDay } from 'date-fns'
-import { ChevronLeft, ChevronRight, Settings } from 'lucide-react'
-import { AiOutlineCamera, AiOutlineClose } from 'react-icons/ai'
-import { FaCalendarAlt, FaClock } from 'react-icons/fa'
-import ClockPicker from './ClockPicker'
+"use client";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { requestProvider } from "@/services/commonapi/commonApi";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  addMonths,
+  subMonths,
+  getDay,
+  startOfDay,
+} from "date-fns";
+import { ChevronLeft, ChevronRight, Settings } from "lucide-react";
+import { AiOutlineCamera, AiOutlineClose } from "react-icons/ai";
+import { FaCalendarAlt, FaClock } from "react-icons/fa";
+import ClockPicker from "./ClockPicker";
+import { showToast } from "@/utils/toast";
+import { getErrorMessage } from "@/services/ErrorHandle";
 
 interface AddressData {
   name: string;
@@ -27,18 +38,22 @@ interface Props {
   onBack: () => void;
 }
 
-const WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const WEEKDAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
+type ActiveView = "default" | "calendar" | "time";
 
-type ActiveView = 'default' | 'calendar' | 'time';
-
-function DesktopScheduleStep({ selectedPlan, subCategoryId, selectedAddress, onBack }: Props) {
+function DesktopScheduleStep({
+  selectedPlan,
+  subCategoryId,
+  selectedAddress,
+  onBack,
+}: Props) {
   const router = useRouter();
-  const [activeView, setActiveView] = useState<ActiveView>('default');
+  const [activeView, setActiveView] = useState<ActiveView>("default");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
-  const [selectedTime, setSelectedTime] = useState('');
-  const [description, setDescription] = useState('');
+  const [selectedTime, setSelectedTime] = useState("");
+  const [description, setDescription] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [bookNow, setBookNow] = useState(false);
@@ -49,16 +64,19 @@ function DesktopScheduleStep({ selectedPlan, subCategoryId, selectedAddress, onB
   });
   const firstDayOffset = getDay(startOfMonth(currentMonth));
 
-  const displayDate = selectedDate ? format(selectedDate, 'dd-MM-yyyy') : 'DD-MM-YYYY';
-  const displayTime = selectedTime || '00:00 AM';
+  const displayDate = selectedDate
+    ? format(selectedDate, "dd-MM-yyyy")
+    : "DD-MM-YYYY";
+  const displayTime = selectedTime || "00:00 AM";
   const isFormValid = selectedDate && selectedTime && description.trim();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) setSelectedFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+    if (e.target.files)
+      setSelectedFiles((prev) => [...prev, ...Array.from(e.target.files!)]);
   };
 
   const removeFile = (index: number) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleConfirm = async () => {
@@ -68,27 +86,36 @@ function DesktopScheduleStep({ selectedPlan, subCategoryId, selectedAddress, onB
     const data = {
       planId: selectedPlan,
       subCategoryId,
-      bookingDate: format(selectedDate!, 'yyyy-MM-dd'),
+      bookingDate: format(selectedDate!, "yyyy-MM-dd"),
       bookingTime: selectedTime,
       description,
       address: selectedAddress,
     };
 
-    const planPriority = localStorage.getItem('PlanPriority');
-    if (planPriority === '1') {
-      router.push(`/premiumplanbook?data=${encodeURIComponent(JSON.stringify(data))}`);
+    const planPriority = localStorage.getItem("PlanPriority");
+    if (planPriority === "1") {
+      router.push(
+        `/premiumplanbook?data=${encodeURIComponent(JSON.stringify(data))}`,
+      );
       return;
     }
-    if (planPriority === '2') {
-      router.push(`/biddingplanbook?data=${encodeURIComponent(JSON.stringify(data))}`);
+    if (planPriority === "2") {
+      router.push(
+        `/biddingplanbook?data=${encodeURIComponent(JSON.stringify(data))}`,
+      );
       return;
     }
 
     try {
       const res = await requestProvider(data);
-      if (res.success && res.data?.bookingId) router.push(`/timecountdown/${res.data.bookingId}`);
+      if (res.success && res.data?.bookingId)
+        router.push(`/timecountdown/${res.data.bookingId}`);
     } catch (error) {
-      console.error('Booking error:', error);
+      showToast({
+        type: "error",
+        title: "Error",
+        message: getErrorMessage(error),
+      });
     } finally {
       setIsLoading(false);
     }
@@ -103,8 +130,12 @@ function DesktopScheduleStep({ selectedPlan, subCategoryId, selectedAddress, onB
             <FaCalendarAlt size={45} className="text-white" />
           </div>
           <div>
-            <p className="font-semibold text-white text-[20px]">Schedule Service</p>
-            <p className="text-white/70 text-xs">{displayDate} | {displayTime}</p>
+            <p className="font-semibold text-white text-[20px]">
+              Schedule Service
+            </p>
+            <p className="text-white/70 text-xs">
+              {displayDate} | {displayTime}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -117,45 +148,50 @@ function DesktopScheduleStep({ selectedPlan, subCategoryId, selectedAddress, onB
                 const now = new Date();
                 setSelectedDate(now);
                 setCurrentMonth(now);
-                setSelectedTime(format(now, 'hh:mm a').toUpperCase());
+                setSelectedTime(format(now, "hh:mm a").toUpperCase());
               }
             }}
             className={`w-5 h-5 rounded-full border-2 transition flex items-center justify-center ${
-              bookNow ? 'bg-white border-white' : 'border-white/50'
+              bookNow ? "bg-white border-white" : "border-white/50"
             }`}
           >
-            {bookNow && <div className="w-2.5 h-2.5 bg-[#2E7D32] rounded-full" />}
+            {bookNow && (
+              <div className="w-2.5 h-2.5 bg-[#2E7D32] rounded-full" />
+            )}
           </button>
         </div>
       </div>
 
       {/* White content */}
       <div className="bg-white w-[90%] lg:w-[80%] mx-auto px-4 lg:px-6 py-6 lg:py-8 rounded-xl mb-6">
-        
-        {activeView === 'default' && (
+        {activeView === "default" && (
           <>
             {/* Tab icons */}
             <div className="flex justify-center gap-6 mb-5">
               <button
-                onClick={() => setActiveView('calendar')}
+                onClick={() => setActiveView("calendar")}
                 className="flex flex-col items-center gap-2 px-8 py-3 rounded-xl hover:bg-gray-50 transition border border-gray-100 cursor-pointer"
               >
                 <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
                   <FaCalendarAlt size={20} className="text-gray-500" />
                 </div>
-                <span className="text-xs font-medium text-gray-600">Select Date</span>
+                <span className="text-xs font-medium text-gray-600">
+                  Select Date
+                </span>
               </button>
 
               <div className="w-px bg-gray-200" />
 
               <button
-                onClick={() => setActiveView('time')}
+                onClick={() => setActiveView("time")}
                 className="flex flex-col items-center gap-2 px-8 py-3 rounded-xl hover:bg-gray-50 transition border border-gray-100 cursor-pointer"
               >
                 <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
                   <FaClock size={20} className="text-gray-500" />
                 </div>
-                <span className="text-xs font-medium text-gray-600">Select Time</span>
+                <span className="text-xs font-medium text-gray-600">
+                  Select Time
+                </span>
               </button>
             </div>
 
@@ -172,9 +208,13 @@ function DesktopScheduleStep({ selectedPlan, subCategoryId, selectedAddress, onB
               <div className="flex flex-wrap gap-2 mb-3">
                 {selectedFiles.map((file, i) => (
                   <div key={i} className="relative">
-                    {file.type.startsWith('image/') ? (
+                    {file.type.startsWith("image/") ? (
                       <>
-                        <img src={URL.createObjectURL(file)} alt="" className="w-14 h-14 object-cover rounded-lg border" />
+                        <img
+                          src={URL.createObjectURL(file)}
+                          alt=""
+                          className="w-14 h-14 object-cover rounded-lg border"
+                        />
                         <AiOutlineClose
                           className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 cursor-pointer text-xs"
                           onClick={() => removeFile(i)}
@@ -183,7 +223,10 @@ function DesktopScheduleStep({ selectedPlan, subCategoryId, selectedAddress, onB
                     ) : (
                       <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-xs">
                         <span className="truncate max-w-16">{file.name}</span>
-                        <AiOutlineClose className="cursor-pointer" onClick={() => removeFile(i)} />
+                        <AiOutlineClose
+                          className="cursor-pointer"
+                          onClick={() => removeFile(i)}
+                        />
                       </div>
                     )}
                   </div>
@@ -194,8 +237,15 @@ function DesktopScheduleStep({ selectedPlan, subCategoryId, selectedAddress, onB
             {/* Upload button */}
             <label className="flex items-center justify-center gap-2 py-3 bg-gray-50 hover:bg-gray-100 cursor-pointer rounded-xl border border-gray-200 transition mb-4">
               <AiOutlineCamera className="text-gray-500" size={18} />
-              <span className="text-sm text-gray-600 font-medium">Upload Photos</span>
-              <input type="file" className="hidden" multiple onChange={handleFileSelect} />
+              <span className="text-sm text-gray-600 font-medium">
+                Upload Photos
+              </span>
+              <input
+                type="file"
+                className="hidden"
+                multiple
+                onChange={handleFileSelect}
+              />
             </label>
 
             {/* Confirm */}
@@ -204,17 +254,17 @@ function DesktopScheduleStep({ selectedPlan, subCategoryId, selectedAddress, onB
               disabled={!isFormValid || isLoading}
               className={`w-full py-3 rounded-xl text-sm font-semibold transition ${
                 isFormValid && !isLoading
-                  ? 'bg-[#7722FF] hover:bg-[#6611EE] text-white'
-                  : 'bg-purple-200 text-white cursor-not-allowed'
+                  ? "bg-[#7722FF] hover:bg-[#6611EE] text-white"
+                  : "bg-purple-200 text-white cursor-not-allowed"
               }`}
             >
-              {isLoading ? 'Booking...' : 'Confirm'}
+              {isLoading ? "Booking..." : "Confirm"}
             </button>
           </>
         )}
 
         {/* Calendar view */}
-        {activeView === 'calendar' && (
+        {activeView === "calendar" && (
           <>
             {/* Tabs - date active */}
             <div className="flex justify-center gap-6 mb-4">
@@ -222,32 +272,42 @@ function DesktopScheduleStep({ selectedPlan, subCategoryId, selectedAddress, onB
                 <div className="w-12 h-12 rounded-xl bg-[#7722FF] flex items-center justify-center">
                   <FaCalendarAlt size={20} className="text-white" />
                 </div>
-                <span className="text-xs font-semibold text-[#7722FF]">Select Date</span>
+                <span className="text-xs font-semibold text-[#7722FF]">
+                  Select Date
+                </span>
               </button>
 
               <div className="w-px bg-gray-200" />
 
               <button
-                onClick={() => setActiveView('time')}
+                onClick={() => setActiveView("time")}
                 className="flex flex-col items-center gap-2 px-8 py-3 rounded-xl hover:bg-gray-50 transition cursor-pointer"
               >
                 <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
                   <FaClock size={20} className="text-gray-500" />
                 </div>
-                <span className="text-xs font-medium text-gray-500">Select Time</span>
+                <span className="text-xs font-medium text-gray-500">
+                  Select Time
+                </span>
               </button>
             </div>
 
             {/* Month nav */}
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-bold text-[#7722FF]">
-                {format(currentMonth, 'MMMM yyyy')} &rsaquo;
+                {format(currentMonth, "MMMM yyyy")} &rsaquo;
               </span>
               <div className="flex gap-1">
-                <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-1 hover:bg-gray-100 rounded">
+                <button
+                  onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                  className="p-1 hover:bg-gray-100 rounded"
+                >
                   <ChevronLeft size={16} className="text-gray-400" />
                 </button>
-                <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-1 hover:bg-gray-100 rounded">
+                <button
+                  onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                  className="p-1 hover:bg-gray-100 rounded"
+                >
                   <ChevronRight size={16} className="text-gray-400" />
                 </button>
               </div>
@@ -256,16 +316,28 @@ function DesktopScheduleStep({ selectedPlan, subCategoryId, selectedAddress, onB
             {/* Weekday headers */}
             <div className="grid grid-cols-7 mb-2">
               {WEEKDAYS.map((d) => (
-                <div key={d} className="text-center text-xs font-semibold text-gray-400 py-1">{d}</div>
+                <div
+                  key={d}
+                  className="text-center text-xs font-semibold text-gray-400 py-1"
+                >
+                  {d}
+                </div>
               ))}
             </div>
 
             {/* Days grid */}
             <div className="grid grid-cols-7 gap-y-3">
-              {Array.from({ length: firstDayOffset }).map((_, i) => <div key={`e-${i}`} />)}
+              {Array.from({ length: firstDayOffset }).map((_, i) => (
+                <div key={`e-${i}`} />
+              ))}
               {days.map((day) => {
-                const isSelected = selectedDate && format(day, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
-                const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+                const isSelected =
+                  selectedDate &&
+                  format(day, "yyyy-MM-dd") ===
+                    format(selectedDate, "yyyy-MM-dd");
+                const isToday =
+                  format(day, "yyyy-MM-dd") ===
+                  format(new Date(), "yyyy-MM-dd");
                 const isPast = startOfDay(day) < startOfDay(new Date());
                 const isSun = getDay(day) === 0;
                 const isSat = getDay(day) === 6;
@@ -276,17 +348,17 @@ function DesktopScheduleStep({ selectedPlan, subCategoryId, selectedAddress, onB
                     disabled={isPast}
                     className={`w-9 h-9 mx-auto flex items-center justify-center text-sm rounded-full transition ${
                       isPast
-                        ? 'text-gray-300 cursor-not-allowed'
+                        ? "text-gray-300 cursor-not-allowed"
                         : isSelected
-                        ? 'bg-[#7722FF] text-white font-bold'
-                        : isToday
-                        ? 'bg-purple-100 text-[#7722FF] font-bold'
-                        : isSun || isSat
-                        ? 'text-red-400 hover:bg-gray-50'
-                        : 'text-gray-700 hover:bg-gray-50'
+                          ? "bg-[#7722FF] text-white font-bold"
+                          : isToday
+                            ? "bg-purple-100 text-[#7722FF] font-bold"
+                            : isSun || isSat
+                              ? "text-red-400 hover:bg-gray-50"
+                              : "text-gray-700 hover:bg-gray-50"
                     }`}
                   >
-                    {format(day, 'd')}
+                    {format(day, "d")}
                   </button>
                 );
               })}
@@ -294,11 +366,14 @@ function DesktopScheduleStep({ selectedPlan, subCategoryId, selectedAddress, onB
 
             {/* Cancel / OK */}
             <div className="flex justify-end gap-4 mt-4 mb-3">
-              <button onClick={() => setActiveView('default')} className="text-sm text-gray-500 font-medium hover:text-gray-700">
+              <button
+                onClick={() => setActiveView("default")}
+                className="text-sm text-gray-500 font-medium hover:text-gray-700"
+              >
                 Cancel
               </button>
               <button
-                onClick={() => setActiveView('default')}
+                onClick={() => setActiveView("default")}
                 className="text-sm text-[#7722FF] font-semibold hover:text-[#6611EE]"
               >
                 OK
@@ -311,28 +386,30 @@ function DesktopScheduleStep({ selectedPlan, subCategoryId, selectedAddress, onB
               disabled={!isFormValid || isLoading}
               className={`w-full py-3 rounded-xl text-sm font-semibold transition ${
                 isFormValid && !isLoading
-                  ? 'bg-[#7722FF] hover:bg-[#6611EE] text-white'
-                  : 'bg-purple-200 text-white cursor-not-allowed'
+                  ? "bg-[#7722FF] hover:bg-[#6611EE] text-white"
+                  : "bg-purple-200 text-white cursor-not-allowed"
               }`}
             >
-              {isLoading ? 'Booking...' : 'Confirm'}
+              {isLoading ? "Booking..." : "Confirm"}
             </button>
           </>
         )}
 
         {/* Time view */}
-        {activeView === 'time' && (
+        {activeView === "time" && (
           <>
             {/* Tabs - time active */}
             <div className="flex justify-center gap-6 mb-4">
               <button
-                onClick={() => setActiveView('calendar')}
+                onClick={() => setActiveView("calendar")}
                 className="flex flex-col items-center gap-2 px-8 py-3 rounded-xl hover:bg-gray-50 transition"
               >
                 <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
                   <FaCalendarAlt size={20} className="text-gray-500" />
                 </div>
-                <span className="text-xs font-medium text-gray-500">Select Date</span>
+                <span className="text-xs font-medium text-gray-500">
+                  Select Date
+                </span>
               </button>
 
               <div className="w-px bg-gray-200" />
@@ -341,23 +418,28 @@ function DesktopScheduleStep({ selectedPlan, subCategoryId, selectedAddress, onB
                 <div className="w-12 h-12 rounded-xl bg-[#7722FF] flex items-center justify-center">
                   <FaClock size={20} className="text-white" />
                 </div>
-                <span className="text-xs font-semibold text-[#7722FF]">Select Time</span>
+                <span className="text-xs font-semibold text-[#7722FF]">
+                  Select Time
+                </span>
               </button>
             </div>
 
             {/* Analog Clock Picker */}
             <ClockPicker
-              value={selectedTime || '07:00 AM'}
+              value={selectedTime || "07:00 AM"}
               onChange={setSelectedTime}
             />
 
             {/* Cancel / OK */}
             <div className="flex justify-end gap-4 mt-2 mb-3">
-              <button onClick={() => setActiveView('default')} className="text-sm text-gray-500 font-medium hover:text-gray-700">
+              <button
+                onClick={() => setActiveView("default")}
+                className="text-sm text-gray-500 font-medium hover:text-gray-700"
+              >
                 Cancel
               </button>
               <button
-                onClick={() => setActiveView('default')}
+                onClick={() => setActiveView("default")}
                 className="text-sm text-[#7722FF] font-semibold hover:text-[#6611EE]"
               >
                 OK
@@ -370,18 +452,17 @@ function DesktopScheduleStep({ selectedPlan, subCategoryId, selectedAddress, onB
               disabled={!isFormValid || isLoading}
               className={`w-full py-3 rounded-xl text-sm font-semibold transition ${
                 isFormValid && !isLoading
-                  ? 'bg-[#7722FF] hover:bg-[#6611EE] text-white'
-                  : 'bg-purple-200 text-white cursor-not-allowed'
+                  ? "bg-[#7722FF] hover:bg-[#6611EE] text-white"
+                  : "bg-purple-200 text-white cursor-not-allowed"
               }`}
             >
-              {isLoading ? 'Booking...' : 'Confirm'}
+              {isLoading ? "Booking..." : "Confirm"}
             </button>
           </>
         )}
       </div>
     </div>
-    
   );
 }
 
-export default DesktopScheduleStep
+export default DesktopScheduleStep;

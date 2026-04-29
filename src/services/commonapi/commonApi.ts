@@ -179,7 +179,7 @@ export const getCurrentlocation = async (latlng: string) => {
     const response = await AxiosConfig.get(`/v1/recharge-no/location/current-location?latlng=${latlng}`);
     return response?.data;
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
@@ -188,7 +188,7 @@ export const getSearchlocation = async (query: string) => {
     const response = await AxiosConfig.get(`/v1/recharge-no/location/search-location?query=${query}`);
     return response?.data;
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
@@ -197,7 +197,7 @@ export const getUserDeatils = async () => {
     const response = await AxiosConfig.get(`/v1/user/user/details`);
     return response?.data;
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
@@ -206,7 +206,7 @@ export const getUserAddress = async () => {
     const response = await AxiosConfig.get(`/v1/user/address`);
     return response?.data;
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
@@ -215,7 +215,7 @@ export const getUserCurrentPackage = async () => {
     const response = await AxiosConfig.get(`/v1/seclobServiceCustomer/package/current`);
     return response?.data;
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
@@ -225,7 +225,7 @@ export const getPartnerDeatils = async (id :string) => {
     const response = await AxiosConfig.get(`/v1/servicepartner/user/details-partner?_id=${id}`);
     return response?.data;
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 

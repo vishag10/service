@@ -1,157 +1,194 @@
-import React, { useState, useEffect } from 'react'
-import { IoArrowBack, IoLocationSharp, IoArrowForward, IoCloseCircle } from 'react-icons/io5'
-import { BiSearch } from 'react-icons/bi'
-import { FaLocationDot } from 'react-icons/fa6'
-import { getCurrentlocation, getSearchlocation } from '@/services/commonapi/commonApi'
+import React, { useState, useEffect } from "react";
+import {
+  IoArrowBack,
+  IoLocationSharp,
+  IoArrowForward,
+  IoCloseCircle,
+} from "react-icons/io5";
+import { BiSearch } from "react-icons/bi";
+import { FaLocationDot } from "react-icons/fa6";
+import {
+  getCurrentlocation,
+  getSearchlocation,
+} from "@/services/commonapi/commonApi";
+import { showToast } from "@/utils/toast";
+import { getErrorMessage } from "@/services/ErrorHandle";
 
 interface LocationData {
-  name: string
-  lat: number
-  lng: number
-  address: string
-  country?: string
-  place_id?: string
-  state?: string
-  city?: string
+  name: string;
+  lat: number;
+  lng: number;
+  address: string;
+  country?: string;
+  place_id?: string;
+  state?: string;
+  city?: string;
 }
 
 interface AddressComponent {
-  long_name: string
-  types: string[]
+  long_name: string;
+  types: string[];
 }
 
 interface MobileLocationModalProps {
-  isOpen: boolean
-  onClose: () => void
-  selectedLocation?: string
-  onLocationSelect?: (location: LocationData) => void
+  isOpen: boolean;
+  onClose: () => void;
+  selectedLocation?: string;
+  onLocationSelect?: (location: LocationData) => void;
 }
 
-function MobileLocationModal({ isOpen, onClose, selectedLocation, onLocationSelect }: MobileLocationModalProps) {
-  const [searchValue, setSearchValue] = useState('')
-  const [searchResults, setSearchResults] = useState<LocationData[]>([])
-  const [loadingLocation, setLoadingLocation] = useState(false)
-  const [searchLoading, setSearchLoading] = useState(false)
-  const [isWaiting, setIsWaiting] = useState(false)
-  const [showMap, setShowMap] = useState(false)
-  const [savedLocations] = useState<LocationData[]>([])
-  const [selectedCity, setSelectedCity] = useState('')
+function MobileLocationModal({
+  isOpen,
+  onClose,
+  selectedLocation,
+  onLocationSelect,
+}: MobileLocationModalProps) {
+  const [searchValue, setSearchValue] = useState("");
+  const [searchResults, setSearchResults] = useState<LocationData[]>([]);
+  const [loadingLocation, setLoadingLocation] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [isWaiting, setIsWaiting] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [savedLocations] = useState<LocationData[]>([]);
+  const [selectedCity, setSelectedCity] = useState("");
 
   const handleUseCurrentLocation = async () => {
-    setLoadingLocation(true)
+    setLoadingLocation(true);
     try {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           async (position) => {
-            const { latitude, longitude } = position.coords
+            const { latitude, longitude } = position.coords;
             try {
-              const response = await getCurrentlocation(`${latitude},${longitude}`)
-              const result = response.data.results?.[0]
-              const address = result?.formatted_address || "Unknown Location"
+              const response = await getCurrentlocation(
+                `${latitude},${longitude}`,
+              );
+              const result = response.data.results?.[0];
+              const address = result?.formatted_address || "Unknown Location";
 
-              let streetname = "My Location"
-              let country, neighborhood, subLocality
+              let streetname = "My Location";
+              let country, neighborhood, subLocality;
               if (result?.address_components) {
-                const road = result.address_components.find((c: AddressComponent) =>
-                  c.types.includes("route")
-                )?.long_name
+                const road = result.address_components.find(
+                  (c: AddressComponent) => c.types.includes("route"),
+                )?.long_name;
 
-                neighborhood = result.address_components.find((c: AddressComponent) =>
-                  c.types.includes("neighborhood")
-                )?.long_name
+                neighborhood = result.address_components.find(
+                  (c: AddressComponent) => c.types.includes("neighborhood"),
+                )?.long_name;
 
-                subLocality = result.address_components.find((c: AddressComponent) =>
-                  c.types.includes("sublocality") || c.types.includes("sublocality_level_1")
-                )?.long_name
+                subLocality = result.address_components.find(
+                  (c: AddressComponent) =>
+                    c.types.includes("sublocality") ||
+                    c.types.includes("sublocality_level_1"),
+                )?.long_name;
 
-                country = result.address_components.find((c: AddressComponent) =>
-                  c.types.includes("country")
-                )?.long_name
+                country = result.address_components.find(
+                  (c: AddressComponent) => c.types.includes("country"),
+                )?.long_name;
 
-                streetname = [road, neighborhood, subLocality, country].filter(Boolean).join(", ")
+                streetname = [road, neighborhood, subLocality, country]
+                  .filter(Boolean)
+                  .join(", ");
               }
               const location = {
                 name: streetname,
                 lat: latitude,
                 lng: longitude,
                 address,
-                country
-              }
-              if (country) localStorage.setItem('country', country)
-              if (latitude) localStorage.setItem('lat', latitude.toString())
-              if (longitude) localStorage.setItem('lon', longitude.toString())
+                country,
+              };
+              if (country) localStorage.setItem("country", country);
+              if (latitude) localStorage.setItem("lat", latitude.toString());
+              if (longitude) localStorage.setItem("lon", longitude.toString());
               if (subLocality || neighborhood) {
-                localStorage.setItem('city', subLocality || neighborhood || '')
+                localStorage.setItem("city", subLocality || neighborhood || "");
               }
-              onLocationSelect?.(location)
-              onClose()
+              onLocationSelect?.(location);
+              onClose();
             } catch (error) {
-              console.error('Error getting address:', error)
+              showToast({
+                type: "error",
+                title: "Error",
+                message: getErrorMessage(error),
+              });
             }
-            setLoadingLocation(false)
+            setLoadingLocation(false);
           },
           (error) => {
-            console.error('Error getting location:', error)
-            setLoadingLocation(false)
-          }
-        )
+            setLoadingLocation(false);
+          },
+        );
       }
     } catch (error) {
-      console.error('Geolocation error:', error)
-      setLoadingLocation(false)
+      showToast({
+        type: "error",
+        title: "Error",
+        message: getErrorMessage(error),
+      });
+      setLoadingLocation(false);
     }
-  }
+  };
 
   const handleSelectLocation = (location: LocationData) => {
-    if (location.country) localStorage.setItem('country', location.country)
-    if (location.lat) localStorage.setItem('lat', location.lat.toString())
-    if (location.lng) localStorage.setItem('lon', location.lng.toString())
-    if (location.name) localStorage.setItem('city', location.name)
-    onLocationSelect?.(location)
-    onClose()
-    setSearchValue('')
-    setSearchResults([])
-  }
+    if (location.country) localStorage.setItem("country", location.country);
+    if (location.lat) localStorage.setItem("lat", location.lat.toString());
+    if (location.lng) localStorage.setItem("lon", location.lng.toString());
+    if (location.name) localStorage.setItem("city", location.name);
+    onLocationSelect?.(location);
+    onClose();
+    setSearchValue("");
+    setSearchResults([]);
+  };
 
   const handleSavedLocationClick = (location: LocationData) => {
-    handleSelectLocation(location)
-  }
+    handleSelectLocation(location);
+  };
 
   // Search functionality
   useEffect(() => {
     if (searchValue.length >= 3) {
-      setIsWaiting(true)
+      setIsWaiting(true);
 
       const timeoutId = setTimeout(async () => {
-        setSearchLoading(true)
+        setSearchLoading(true);
         try {
-          const response = await getSearchlocation(searchValue)
-          const formattedResults = response.data.predictions.map((item: { structured_formatting: { main_text: string }, description: string, place_id: string, terms: { value: string }[] }) => ({
-            name: item.structured_formatting.main_text,
-            address: item.description,
-            place_id: item.place_id,
-            country: item.terms[item.terms.length - 1]?.value
-          }))
-          setSearchResults(formattedResults)
+          const response = await getSearchlocation(searchValue);
+          const formattedResults = response.data.predictions.map(
+            (item: {
+              structured_formatting: { main_text: string };
+              description: string;
+              place_id: string;
+              terms: { value: string }[];
+            }) => ({
+              name: item.structured_formatting.main_text,
+              address: item.description,
+              place_id: item.place_id,
+              country: item.terms[item.terms.length - 1]?.value,
+            }),
+          );
+          setSearchResults(formattedResults);
         } catch (error) {
-          console.error('Search error:', error)
-          setSearchResults([])
+          showToast({
+            type: "error",
+            title: "Error",
+            message: getErrorMessage(error),
+          });
+          setSearchResults([]);
         }
-        setSearchLoading(false)
-        setIsWaiting(false)
-      }, 500)
+        setSearchLoading(false);
+        setIsWaiting(false);
+      }, 500);
 
-      return () => clearTimeout(timeoutId)
+      return () => clearTimeout(timeoutId);
     } else {
-      setSearchResults([])
-      setIsWaiting(false)
-      setSearchLoading(false)
+      setSearchResults([]);
+      setIsWaiting(false);
+      setSearchLoading(false);
     }
-  }, [searchValue])
+  }, [searchValue]);
 
-
-
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div className="fixed top-0 left-0 right-0 bottom-0 bg-white z-[9999] flex flex-col">
@@ -181,7 +218,7 @@ function MobileLocationModal({ isOpen, onClose, selectedLocation, onLocationSele
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
         {/* Use Current Location */}
-        <div 
+        <div
           onClick={handleUseCurrentLocation}
           className="flex items-center justify-between p-4 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-100"
         >
@@ -191,7 +228,9 @@ function MobileLocationModal({ isOpen, onClose, selectedLocation, onLocationSele
             </div>
             <div>
               <div className="font-medium text-gray-900">
-                {loadingLocation ? 'Detecting location...' : 'Use current location'}
+                {loadingLocation
+                  ? "Detecting location..."
+                  : "Use current location"}
               </div>
             </div>
           </div>
@@ -205,16 +244,19 @@ function MobileLocationModal({ isOpen, onClose, selectedLocation, onLocationSele
                 key={index}
                 onClick={() => handleSelectLocation(item)}
                 className={`flex items-center justify-between p-4 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-100 ${
-                  selectedCity === item.name ? 'bg-purple-50' : ''
+                  selectedCity === item.name ? "bg-purple-50" : ""
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <FaLocationDot className="text-purple-400 text-lg flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 truncate">{item.name}</div>
+                    <div className="font-medium text-gray-900 truncate">
+                      {item.name}
+                    </div>
                     <div className="text-sm text-gray-500 truncate">
-                      {item.state && item.country ? `${item.state}, ${item.country}` : 
-                       item.state || item.country || item.address}
+                      {item.state && item.country
+                        ? `${item.state}, ${item.country}`
+                        : item.state || item.country || item.address}
                     </div>
                   </div>
                 </div>
@@ -226,22 +268,29 @@ function MobileLocationModal({ isOpen, onClose, selectedLocation, onLocationSele
           <div>
             {savedLocations.length > 0 && (
               <div>
-                <div className="px-4 py-3 text-sm font-semibold text-gray-600 bg-gray-50">Recent Locations</div>
+                <div className="px-4 py-3 text-sm font-semibold text-gray-600 bg-gray-50">
+                  Recent Locations
+                </div>
                 {savedLocations.map((location: LocationData, index: number) => (
                   <div
                     key={index}
                     onClick={() => handleSavedLocationClick(location)}
                     className={`flex items-center justify-between p-4 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-100 ${
-                      selectedCity === location.city ? 'bg-purple-50' : ''
+                      selectedCity === location.city ? "bg-purple-50" : ""
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <FaLocationDot className="text-purple-400 text-lg flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-900 truncate">{location.city}</div>
+                        <div className="font-medium text-gray-900 truncate">
+                          {location.city}
+                        </div>
                         <div className="text-sm text-gray-500 truncate">
-                          {location.state && location.country ? `${location.state}, ${location.country}` : 
-                           location.state || location.country || location.address}
+                          {location.state && location.country
+                            ? `${location.state}, ${location.country}`
+                            : location.state ||
+                              location.country ||
+                              location.address}
                         </div>
                       </div>
                     </div>
@@ -255,7 +304,9 @@ function MobileLocationModal({ isOpen, onClose, selectedLocation, onLocationSele
           <div className="flex flex-col items-center justify-center py-12">
             <FaLocationDot className="text-gray-300 text-3xl mb-3" />
             <div className="text-gray-500 text-center">
-              <div className="font-medium">Type at least 3 characters to search</div>
+              <div className="font-medium">
+                Type at least 3 characters to search
+              </div>
             </div>
           </div>
         ) : isWaiting || searchLoading ? (
@@ -268,12 +319,14 @@ function MobileLocationModal({ isOpen, onClose, selectedLocation, onLocationSele
             <FaLocationDot className="text-gray-300 text-3xl mb-3" />
             <div className="text-gray-500 text-center">
               <div className="font-medium">No results found</div>
-              <div className="text-sm">Try searching for a different location</div>
+              <div className="text-sm">
+                Try searching for a different location
+              </div>
             </div>
           </div>
         )}
       </div>
-      
+
       {/* Map Modal */}
       {showMap && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex flex-col">
@@ -298,7 +351,7 @@ function MobileLocationModal({ isOpen, onClose, selectedLocation, onLocationSele
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default MobileLocationModal
+export default MobileLocationModal;

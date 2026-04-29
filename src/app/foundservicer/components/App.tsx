@@ -12,6 +12,7 @@ import { bookService, getPartnerDeatils } from "@/services/commonapi/commonApi";
 import MobileDeatils from "@/components/chanelpartnerdeatils/MobileDeatils";
 import { showToast } from "@/utils/toast";
 import { useRouter } from "next/navigation";
+import { getErrorMessage } from "@/services/ErrorHandle";
 
 function App() {
   const router = useRouter();
@@ -39,7 +40,6 @@ function App() {
         requestId: acceptedRequestData.requestId,
       };
       const res = await bookService(data);
-      console.log("Book Service Response:", res);
       if (res.success) {
         if (status === "cancelled") {
            showToast({
@@ -59,11 +59,10 @@ function App() {
         router.push(`/servicebooked?id=${bookingid}`);
       }
     } catch (error) {
-      console.error("Book Service Error:", error);
       showToast({
         type: "error",
         title: "Error",
-        message: "Failed to book service",
+        message: getErrorMessage(error),
       });
     }
   };
@@ -79,14 +78,16 @@ function App() {
       const res = await getPartnerDeatils(id);
 
       setPartner(res);
-    } catch (error) {}
+    } catch (error) {
+      showToast({
+        type: "error",
+        title: "Error",
+        message: getErrorMessage(error),
+      });
+    }
   };
 
-  useEffect(() => {
-    if (Partner) {
-      console.log("Partner Details (from state):", Partner);
-    }
-  }, [Partner]);
+
 
   useEffect(() => {
     const handlePopState = () => {

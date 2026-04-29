@@ -45,7 +45,6 @@ function App() {
             try {
                 setBookingData(JSON.parse(decodeURIComponent(data)))
             } catch (error) {
-                console.error('Error parsing booking data:', error)
             }
         }
     }, [searchParams])
@@ -61,9 +60,8 @@ function App() {
                     })
                     if (res.success) {
                         setProviders(res.data.providers || [])
-                        console.log("Providers Data Set:", res.data.providers || []);
                     }
-                    console.log("All Providers:", res);
+                  
                 } catch (error) {
 
                 }
@@ -89,11 +87,7 @@ function App() {
         }
     }
 
-    useEffect(() => {
-        if (Partner) {
-            console.log("Partner Details (from state):", Partner);
-        }
-    }, [Partner]);
+
 
     useEffect(() => {
         const handlePopState = () => {

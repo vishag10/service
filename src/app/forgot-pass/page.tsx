@@ -109,7 +109,6 @@ const ForgotPass = () => {
         setIsActive(true);
       }
     } catch (error: unknown) {
-      console.log(error);
       setIsLoading(false);
       const errorMessage = error instanceof Error ? error.message : 'An error occurred';
       toast.error(errorMessage, {
@@ -163,7 +162,6 @@ const ForgotPass = () => {
         setIsLoading(false);
       }
     } catch (error: unknown) {
-      console.log(error);
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       toast.error(errorMessage);
       localStorage.removeItem("Phone");
@@ -201,7 +199,6 @@ const ForgotPass = () => {
         });
       }
     } catch (error: unknown) {
-      console.log(error);
       const errorMessage = error instanceof Error ? error.message : 'An error occurred during OTP submission';
       toast.error(
         errorMessage,

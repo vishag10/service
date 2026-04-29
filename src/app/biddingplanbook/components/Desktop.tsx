@@ -41,7 +41,7 @@ function Desktop() {
           try {
             setBookingData(JSON.parse(decodeURIComponent(data)))
           } catch (error) {
-            console.error('Error parsing booking data:', error)
+            
           }
         }
       }, [searchParams])
@@ -57,9 +57,7 @@ function Desktop() {
               })
               if (res.success) {
                 setProviders(res.data.providers || [])
-                console.log("Providers Data Set:", res.data.providers || []);
-              }
-              console.log("All Providers:", res);
+              };
             } catch (error) {
               
             }
@@ -68,10 +66,7 @@ function Desktop() {
         }
       }, [bookingData])
     
-      useEffect(() => {
-        console.log("Providers State Updated:", providers);
-      }, [providers]) 
-    
+
       if (!bookingData) {
         return <div className="flex justify-center items-center h-screen">Loading...</div>
       }

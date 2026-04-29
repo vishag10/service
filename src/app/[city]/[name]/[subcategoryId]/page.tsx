@@ -19,7 +19,7 @@ export default function Page({ params }: { params: Promise<{ city: string; name:
         }
       }
       
-      console.log(decodeParam(p.name))
+      
       const decodedName = decodeParam(p.name)
       setDecodedName(decodedName)
       setResolvedParams({
@@ -34,10 +34,8 @@ export default function Page({ params }: { params: Promise<{ city: string; name:
     try {
       const res=await deatiledService(decodedName);
       if(res.success){
-        console.log('dfghjhgfghj',res);
         const subCategoryId =res.data?.subCategories[0]?.id;
         setserviceId(subCategoryId );
-        console.log('iddd',serviceId);
       }
     } catch (error) {
       

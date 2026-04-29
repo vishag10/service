@@ -60,7 +60,6 @@ function App({ id }: AppProps) {
                                 width={375}
                                 height={337}
                                 className="w-full h-[337px] object-cover rounded-lg"
-                                onError={(e) => console.log('Image failed to load:', src)}
                             />
                         </div>
                     ))}

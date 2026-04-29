@@ -9,7 +9,6 @@ export const getUser = async (values: RefreshTokenRequest) =>{
         const { data } = await AxiosConfig.post("/v1/user-no/auth/token-refresh-token", values);
     return data;
     } catch (error: unknown) {
-        console.log(error);
     const errorMessage = error instanceof Error && 'response' in error 
         ? (error as { response?: { data?: { message?: string } } })?.response?.data?.message 
         : 'Registration failed';
@@ -22,12 +21,10 @@ export const loginUser = async (values: { email?: string; phone?: string; passwo
   try {
     const { data } = await AxiosConfig.post("v1/user-no/auth/login", values);
     if (data?.refreshToken) {
-      console.log("Login successful, storing token:", data?.refreshToken);
       localStorage?.setItem("refreshtoken", data?.refreshToken);
     }
     return data;
   } catch (error: unknown) {
-    console.log(error);
     const errorMessage = error instanceof Error && 'response' in error 
       ? (error as { response?: { data?: { message?: string } } })?.response?.data?.message 
       : 'Login failed';
@@ -40,7 +37,6 @@ export const loginWith3rdUser = async (values: { credential?: string }) => {
     const { data } = await AxiosConfig.post("/v1/user-no/auth/google", values);
     return data;
   } catch (error: unknown) {
-    console.log(error);
     const errorMessage = error instanceof Error && 'response' in error 
       ? (error as { response?: { data?: { message?: string } } })?.response?.data?.message 
       : 'Login failed';
@@ -54,7 +50,6 @@ export const sendOtp = async (values: { email: string; countryCode?: string; pho
     const { data } = await AxiosConfig.post("v1/user-no/auth/send-otp", values);
     return data;
   } catch (error: unknown) {
-    console.log(error);
     const errorMessage = error instanceof Error && 'response' in error
       ? (error as { response?: { data?: { message?: string } } })?.response?.data?.message
       : 'Failed to send OTP';
@@ -96,7 +91,6 @@ export const registerUser = async (values: RegisterUserValues) => {
       `v1/user-no/auth/register?id=${id}`,
       bodyWithoutId
     );
-    console.log("Registration successful777777", data);
     return data;
   } catch (error: unknown) {
     const errorMessage = error instanceof Error && 'response' in error
@@ -114,7 +108,6 @@ export const forgetPassword = async (payload: { phone: string; countryCode: stri
     });
     return data;
   } catch (error: unknown) {
-    console.log(error);
     const errorMessage = error instanceof Error && 'response' in error
       ? (error as { response?: { data?: { message?: string } } })?.response?.data?.message
       : 'Failed to send reset SMS';
@@ -130,7 +123,6 @@ export const verifyOtp = async (values: { phone?: string; countryCode?: string; 
     );
     return data;
   } catch (error: unknown) {
-    console.log(error);
     const errorMessage = error instanceof Error && 'response' in error
       ? (error as { response?: { data?: { message?: string } } })?.response?.data?.message
       : 'OTP verification failed';
@@ -146,7 +138,6 @@ export const updatePassword = async (values: { password: string; phone?: string;
     );
     return data;
   } catch (error: unknown) {
-    console.log(error);
     const errorMessage = error instanceof Error && 'response' in error
       ? (error as { response?: { data?: { message?: string } } })?.response?.data?.message
       : 'Failed to update password';
