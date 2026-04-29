@@ -94,8 +94,17 @@ interface requestProviderData {
   description: string;
   bookingTime: string;
   bookingDate: string;
-  // distance:string | number; 
-  // packagePriority:string | number;
+  address?: {
+    name: string;
+    phone: string;
+    country: string;
+    state: string;
+    city: string;
+    zip: string;
+    HouseNo: string;
+    RoadName: string;
+    type: number;
+  };
 }
 export const requestProvider = async (data: requestProviderData) => {
   try {
@@ -106,6 +115,9 @@ export const requestProvider = async (data: requestProviderData) => {
     formData.append('planId', data.planId);
     formData.append('subCategoryId', data.subCategoryId);
     formData.append('identifyService', 'seclobService');
+    if (data.address) {
+      formData.append('address', JSON.stringify(data.address));
+    }
 
 
     const response = await AxiosConfig.post(
