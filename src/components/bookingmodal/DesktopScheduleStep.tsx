@@ -122,18 +122,18 @@ function DesktopScheduleStep({
   };
 
   return (
-    <div className="w-[90vw] max-w-[800px] lg:max-w-[900px] xl:max-w-[950px] min-h-[550px] h-auto max-h-[90vh] bg-[#1AA45B] rounded-2xl overflow-y-auto shadow-2xl">
+    <div className="w-full md:w-[90vw] md:max-w-[800px] lg:max-w-[900px] xl:max-w-[950px] md:min-h-[550px] h-auto max-h-[90vh] bg-[#1AA45B] rounded-t-2xl md:rounded-2xl overflow-y-auto shadow-2xl">
       {/* Green header */}
-      <div className="w-[90%] lg:w-[80%] mx-auto mt-8 lg:mt-12 mb-4 flex items-center justify-between pr-2">
-        <div className="flex items-center gap-2.5">
-          <div className=" flex items-center justify-center">
-            <FaCalendarAlt size={45} className="text-white" />
+      <div className="w-[90%] md:w-[90%] lg:w-[80%] mx-auto mt-4 md:mt-8 lg:mt-12 mb-3 md:mb-4 flex items-center justify-between pr-2">
+        <div className="flex items-center gap-2 md:gap-2.5">
+          <div className="flex items-center justify-center">
+            <FaCalendarAlt className="text-white text-[30px] md:text-[45px]" />
           </div>
           <div>
-            <p className="font-semibold text-white text-[20px]">
+            <p className="font-semibold text-white text-[16px] md:text-[20px]">
               Schedule Service
             </p>
-            <p className="text-white/70 text-xs">
+            <p className="text-white/70 text-[10px] md:text-xs">
               {displayDate} | {displayTime}
             </p>
           </div>
@@ -163,19 +163,19 @@ function DesktopScheduleStep({
       </div>
 
       {/* White content */}
-      <div className="bg-white w-[90%] lg:w-[80%] mx-auto px-4 lg:px-6 py-6 lg:py-8 rounded-xl mb-6">
+      <div className="bg-white w-[90%] lg:w-[80%] mx-auto px-4 lg:px-6 py-4 md:py-6 lg:py-8 rounded-xl mb-3 md:mb-6">
         {activeView === "default" && (
           <>
             {/* Tab icons */}
-            <div className="flex justify-center gap-6 mb-5">
+            <div className="flex justify-center gap-4 md:gap-6 mb-4 md:mb-5">
               <button
                 onClick={() => setActiveView("calendar")}
-                className="flex flex-col items-center gap-2 px-8 py-3 rounded-xl hover:bg-gray-50 transition border border-gray-100 cursor-pointer"
+                className="flex flex-col items-center gap-1.5 md:gap-2 px-5 md:px-8 py-2 md:py-3 rounded-xl hover:bg-gray-50 transition border border-gray-100 cursor-pointer"
               >
-                <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
-                  <FaCalendarAlt size={20} className="text-gray-500" />
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gray-100 flex items-center justify-center">
+                  <FaCalendarAlt className="text-gray-500 text-[16px] md:text-[20px]" />
                 </div>
-                <span className="text-xs font-medium text-gray-600">
+                <span className="text-[10px] md:text-xs font-medium text-gray-600">
                   Select Date
                 </span>
               </button>
@@ -184,12 +184,12 @@ function DesktopScheduleStep({
 
               <button
                 onClick={() => setActiveView("time")}
-                className="flex flex-col items-center gap-2 px-8 py-3 rounded-xl hover:bg-gray-50 transition border border-gray-100 cursor-pointer"
+                className="flex flex-col items-center gap-1.5 md:gap-2 px-5 md:px-8 py-2 md:py-3 rounded-xl hover:bg-gray-50 transition border border-gray-100 cursor-pointer"
               >
-                <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
-                  <FaClock size={20} className="text-gray-500" />
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gray-100 flex items-center justify-center">
+                  <FaClock className="text-gray-500 text-[16px] md:text-[20px]" />
                 </div>
-                <span className="text-xs font-medium text-gray-600">
+                <span className="text-[10px] md:text-xs font-medium text-gray-600">
                   Select Time
                 </span>
               </button>
@@ -267,12 +267,12 @@ function DesktopScheduleStep({
         {activeView === "calendar" && (
           <>
             {/* Tabs - date active */}
-            <div className="flex justify-center gap-6 mb-4">
-              <button className="flex flex-col  items-center gap-2 px-8 py-3 rounded-xl bg-purple-50 cursor-pointer">
-                <div className="w-12 h-12 rounded-xl bg-[#7722FF] flex items-center justify-center">
-                  <FaCalendarAlt size={20} className="text-white" />
+            <div className="flex justify-center gap-4 md:gap-6 mb-4">
+              <button className="flex flex-col items-center gap-1.5 md:gap-2 px-5 md:px-8 py-2 md:py-3 rounded-xl bg-purple-50 cursor-pointer">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#7722FF] flex items-center justify-center">
+                  <FaCalendarAlt className="text-white text-[16px] md:text-[20px]" />
                 </div>
-                <span className="text-xs font-semibold text-[#7722FF]">
+                <span className="text-[10px] md:text-xs font-semibold text-[#7722FF]">
                   Select Date
                 </span>
               </button>
@@ -281,12 +281,12 @@ function DesktopScheduleStep({
 
               <button
                 onClick={() => setActiveView("time")}
-                className="flex flex-col items-center gap-2 px-8 py-3 rounded-xl hover:bg-gray-50 transition cursor-pointer"
+                className="flex flex-col items-center gap-1.5 md:gap-2 px-5 md:px-8 py-2 md:py-3 rounded-xl hover:bg-gray-50 transition cursor-pointer"
               >
-                <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
-                  <FaClock size={20} className="text-gray-500" />
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gray-100 flex items-center justify-center">
+                  <FaClock className="text-gray-500 text-[16px] md:text-[20px]" />
                 </div>
-                <span className="text-xs font-medium text-gray-500">
+                <span className="text-[10px] md:text-xs font-medium text-gray-500">
                   Select Time
                 </span>
               </button>
@@ -399,26 +399,26 @@ function DesktopScheduleStep({
         {activeView === "time" && (
           <>
             {/* Tabs - time active */}
-            <div className="flex justify-center gap-6 mb-4">
+            <div className="flex justify-center gap-4 md:gap-6 mb-4">
               <button
                 onClick={() => setActiveView("calendar")}
-                className="flex flex-col items-center gap-2 px-8 py-3 rounded-xl hover:bg-gray-50 transition"
+                className="flex flex-col items-center gap-1.5 md:gap-2 px-5 md:px-8 py-2 md:py-3 rounded-xl hover:bg-gray-50 transition"
               >
-                <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
-                  <FaCalendarAlt size={20} className="text-gray-500" />
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gray-100 flex items-center justify-center">
+                  <FaCalendarAlt className="text-gray-500 text-[16px] md:text-[20px]" />
                 </div>
-                <span className="text-xs font-medium text-gray-500">
+                <span className="text-[10px] md:text-xs font-medium text-gray-500">
                   Select Date
                 </span>
               </button>
 
               <div className="w-px bg-gray-200" />
 
-              <button className="flex flex-col items-center gap-2 px-8 py-3 rounded-xl bg-purple-50">
-                <div className="w-12 h-12 rounded-xl bg-[#7722FF] flex items-center justify-center">
-                  <FaClock size={20} className="text-white" />
+              <button className="flex flex-col items-center gap-1.5 md:gap-2 px-5 md:px-8 py-2 md:py-3 rounded-xl bg-purple-50">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-[#7722FF] flex items-center justify-center">
+                  <FaClock className="text-white text-[16px] md:text-[20px]" />
                 </div>
-                <span className="text-xs font-semibold text-[#7722FF]">
+                <span className="text-[10px] md:text-xs font-semibold text-[#7722FF]">
                   Select Time
                 </span>
               </button>

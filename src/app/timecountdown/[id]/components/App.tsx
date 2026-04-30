@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
-import config from '@/services/socketio/config'
+import config from "@/services/socketio/config";
 import socketService from "@/services/socketio/SocketService";
-import { useRouter } from 'next/navigation';
-import { useDispatch } from 'react-redux';
-import { setAcceptedRequest } from '@/redux/acceptedRequestSlice';
+import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { setAcceptedRequest } from "@/redux/acceptedRequestSlice";
+import { PiWarningFill } from "react-icons/pi";
+
 interface AcceptedRequest {
   providerId: string;
   requestId: string;
@@ -27,9 +29,12 @@ function App({ id }: AppProps) {
   const totalTime = 180;
   const [timeLeft, setTimeLeft] = useState(totalTime);
   const [smoothProgress, setSmoothProgress] = useState(0);
-  const [connectionStatus, setConnectionStatus] = React.useState('Disconnected');
-    const [acceptedRequests, setAcceptedRequests] = React.useState<AcceptedRequest[]>([]);
-    const [notifications, setNotifications] = React.useState<Notification[]>([]);
+  const [connectionStatus, setConnectionStatus] =
+    React.useState("Disconnected");
+  const [acceptedRequests, setAcceptedRequests] = React.useState<
+    AcceptedRequest[]
+  >([]);
+  const [notifications, setNotifications] = React.useState<Notification[]>([]);
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -42,159 +47,169 @@ function App({ id }: AppProps) {
   useEffect(() => {
     const smoothTimer = setInterval(() => {
       setSmoothProgress((prev) => {
-        const target = ((totalTime - timeLeft) / totalTime) * 100;
+        const target = ((totalTime - Math.max(0, timeLeft)) / totalTime) * 100;
         return prev + (target - prev) * 0.1;
       });
     }, 50);
     return () => clearInterval(smoothTimer);
   }, [timeLeft, totalTime]);
 
-  // Circle settings
-  const radius = 90;
+  const radius = 115;
   const circumference = 2 * Math.PI * radius;
   const progress = (smoothProgress / 100) * circumference;
 
-  // Timer color change logic
-  let strokeColor = "url(#purpleGradient)"; // purple gradient
-  let gradientColor = "rgba(139, 92, 246, 0.1)"; // very light purple
+  let thinStrokeColor = "#8b5cf6";
+  let thickStrokeColor = "#ede9fe";
+  let gradientColor = "rgba(139, 92, 246, 0.4)";
+
   if (timeLeft <= 10) {
-    strokeColor = "#ef4444"; // red
-    gradientColor = "rgba(239, 68, 68, 0.1)"; // very light red
-  } else if (timeLeft <= 30) {
-    strokeColor = "#facc15"; // yellow
-    gradientColor = "rgba(250, 204, 21, 0.1)"; // very light yellow
+    thinStrokeColor = "#ef4444";
+    thickStrokeColor = "#fee2e2";
+    gradientColor = "rgba(239, 68, 68, 0.4)";
+  } else if (timeLeft <= 40) {
+    thinStrokeColor = "#eab308";
+    thickStrokeColor = "#fef08a";
+    gradientColor = "rgba(234, 179, 8, 0.4)";
   }
 
-  // Format time (MM:SS)
   const minutes = Math.floor(timeLeft / 60)
     .toString()
     .padStart(2, "0");
   const seconds = (timeLeft % 60).toString().padStart(2, "0");
 
   useEffect(() => {
-    // Connect to Socket.IO server
     const socket = socketService.connect(config.SOCKET_URL);
 
-
-    socket.on('connect', () => {
-      setConnectionStatus('Connected');
-      const customerId = localStorage.getItem('userId');
-      socket.emit('joinCustomerRoom', customerId);
+    socket.on("connect", () => {
+      setConnectionStatus("Connected");
+      const customerId = localStorage.getItem("userId");
+      socket.emit("joinCustomerRoom", customerId);
     });
 
-    socket.on('disconnect', () => {
-      setConnectionStatus('Disconnected');
+    socket.on("disconnect", () => {
+      setConnectionStatus("Disconnected");
     });
 
-
-    // Listen for request acceptance
-     socket.on('requestAccepted', (data: AcceptedRequest) => {
-          dispatch(setAcceptedRequest(data));
-          setAcceptedRequests(prev => [...prev, data]);
-          const notification = {
-            type: 'Request Accepted',
-            providerId: data.providerId,
-            requestId: data.requestId,
-            timestamp: new Date(data.timestamp)
-          };
-          setNotifications(prev => [notification, ...prev]);
-          router.push('/foundservicer');
-        });
+    socket.on("requestAccepted", (data: AcceptedRequest) => {
+      dispatch(setAcceptedRequest(data));
+      setAcceptedRequests((prev) => [...prev, data]);
+      const notification = {
+        type: "Request Accepted",
+        providerId: data.providerId,
+        requestId: data.requestId,
+        timestamp: new Date(data.timestamp),
+      };
+      setNotifications((prev) => [notification, ...prev]);
+      router.push("/foundservicer");
+    });
 
     return () => {
       socketService.disconnect();
     };
   }, []);
+
   return (
-    <div className='w-full bg-white h-screen'>
-       <div 
-         className="w-full h-[120px] transition-all duration-500"
-         style={{
-           background: `linear-gradient(180deg, ${gradientColor} 0%, transparent 100%)`
-         }}
-       ></div>
-       
-       {/* Timer Circle */}
-      <div className="flex flex-col items-center mt-16 relative">
-        <div className="relative">
-          {/* Outer glow effect */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-200/30 to-purple-300/20 blur-xl scale-110"></div>
-          
-          <svg width="250" height="250" className="rotate-[-90deg] relative z-10 drop-shadow-lg">
-            {/* Gradient definitions */}
-            <defs>
-              <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#8b5cf6" />
-                <stop offset="100%" stopColor="#a855f7" />
-              </linearGradient>
-            </defs>
-            
-            {/* Background circle */}
+    <div className="w-full min-h-screen bg-white relative overflow-hidden flex flex-col font-sans">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
+        .font-outfit { font-family: 'Outfit', sans-serif; }
+      `}</style>
+
+      {/* Background Gradient */}
+      <div
+        className="absolute top-0 left-0 w-full h-[500px] transition-all duration-1000 pointer-events-none"
+        style={{
+          background: `radial-gradient(100% 100% at 50% 0%, ${gradientColor} 0%, transparent 100%)`,
+          opacity: 0.5,
+        }}
+      />
+
+      <div className="flex-1 flex flex-col items-center pt-28 px-6 relative z-10 w-full max-w-md mx-auto">
+        {/* Timer Circle Area */}
+        <div className="relative w-[300px] h-[300px] flex items-center justify-center mb-4">
+          {/* SVG Progress Rings */}
+          <svg
+            width="300"
+            height="300"
+            className="absolute inset-0 drop-shadow-sm"
+            style={{ transform: "rotate(150deg)" }}
+          >
+            {/* Thick background track */}
             <circle
-              cx="125"
-              cy="125"
+              cx="150"
+              cy="150"
               r={radius}
-              stroke="#f8f9fa"
-              strokeWidth="14"
-              fill="none"
-              strokeLinecap="round"
-            />
-            
-            {/* Progress circle */}
-            <circle
-              cx="125"
-              cy="125"
-              r={radius}
-              stroke={strokeColor}
-              strokeWidth="14"
+              stroke={thickStrokeColor}
+              strokeWidth="20"
               fill="none"
               strokeDasharray={circumference}
               strokeDashoffset={circumference - progress}
               strokeLinecap="round"
-              style={{
-                transition: 'stroke-dashoffset 0.05s linear'
-              }}
+              className="transition-all duration-300 ease-out"
+            />
+            {/* Thin progress track */}
+            <circle
+              cx="150"
+              cy="150"
+              r={radius}
+              stroke={thinStrokeColor}
+              strokeWidth="3.5"
+              fill="none"
+              strokeDasharray={circumference}
+              strokeDashoffset={circumference - progress}
+              strokeLinecap="round"
+              className="transition-all duration-300 ease-out"
             />
           </svg>
 
-          {/* Timer Text */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-gray-900 leading-none">
+          {/* Inner White Card */}
+          <div className="w-[190px] h-[190px] bg-white rounded-full shadow-[0_8px_35px_rgba(0,0,0,0.08)] flex items-center justify-center z-10 relative">
+            <div
+              className={`flex items-baseline justify-center ${timeLeft === 0 ? "text-[#ef4444]" : "text-[#111827]"}`}
+            >
+              <span className="text-[2.4rem] font-outfit font-black tracking-tighter leading-none">
                 {minutes}:{seconds}
-              </div>
-              <div className="text-sm font-medium text-gray-500 mt-1">mins</div>
+              </span>
+              <span className="text-[1.1rem] font-outfit font-bold ml-1.5 tracking-tight">
+                mins
+              </span>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Status */}
-      {timeLeft > 0 ? (
-        <div className="mt-10 text-center">
-          <p className="font-semibold">Waiting for Your Service Partner</p>
-          <p className="text-sm text-gray-500">
-            We&apos;ve notified your partner. Hang tight! <br />
-            don&apos;t close the tab
-          </p>
-        </div>
-      ) : (
-        <div className="mt-10 px-6">
-          <div className="border-l-4 border-red-500 bg-red-50 p-4 rounded">
-            <p className="text-red-600 font-medium mb-2">
-              We couldn&apos;t confirm this partner&apos;s arrival.
-            </p>
-            <p className="text-sm text-gray-600">
-              Please try another service partner within 10 km distance.
+        {/* Dynamic Status Text & Actions */}
+        {timeLeft > 0 ? (
+          <div className="text-center flex flex-col items-center animate-fade-in mt-2">
+            <h2 className="text-[1.15rem] font-outfit font-bold text-gray-900 mb-2 tracking-wide">
+              Waiting for Your Service Partner
+            </h2>
+            <p className="text-[0.95rem] font-outfit font-medium text-gray-400">
+              We've notified your partner. Hang tight!
             </p>
           </div>
-          <button className="mt-4 w-full bg-red-500 text-white py-3 rounded-lg font-semibold">
-            Next Sam
-          </button>
-        </div>
-      )}
+        ) : (
+          <div className="flex flex-col items-center w-full animate-fade-in ">
+            <div className="w-14 h-14 pb-2 rounded-full bg-red-500 flex items-center justify-center">
+              <PiWarningFill className="text-white" size={32} />
+            </div>
+            <p className="text-center text-[0.95rem] font-outfit text-gray-800 font-medium leading-relaxed pb-2 max-w-[300px]">
+              We couldn't confirm this partner's arrival. Please try another
+              service partner within 10 km distance.
+            </p>
+
+            <div className="flex w-full space-x-4 mt-auto">
+              <button className="flex-1 py-2.5 bg-white border-[1.5px] border-[#ef4444] text-[#ef4444] rounded-2xl font-outfit font-bold text-[1rem] hover:bg-red-50 transition-all active:scale-95">
+                Cancel
+              </button>
+              <button className="flex-1 py-2.5 bg-[#8b5cf6] text-white rounded-2xl font-outfit font-bold text-[1rem] shadow-lg shadow-purple-500/25 hover:bg-[#7c3aed] transition-all active:scale-95">
+                Next 10km
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

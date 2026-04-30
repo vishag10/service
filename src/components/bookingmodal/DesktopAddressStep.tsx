@@ -80,11 +80,11 @@ function DesktopAddressStep({ onOk }: Props) {
   const getTypeIcon = (type: number) => {
     switch (type) {
       case 1:
-        return <FaHome size={30} />;
+        return <FaHome className="text-[20px] md:text-[30px]" />;
       case 2:
-        return <FaBriefcase size={30} />;
+        return <FaBriefcase className="text-[20px] md:text-[30px]" />;
       default:
-        return <FaHome size={30} />;
+        return <FaHome className="text-[20px] md:text-[30px]" />;
     }
   };
 
@@ -132,22 +132,22 @@ function DesktopAddressStep({ onOk }: Props) {
   };
 
   return (
-    <div className="w-[90vw] max-w-[800px] bg-[#1AA45B] rounded-2xl overflow-hidden shadow-2xl">
+    <div className="w-full md:w-[90vw] md:max-w-[800px] bg-[#1AA45B] rounded-t-2xl md:rounded-2xl overflow-hidden shadow-2xl">
       {/* Green header section */}
-      <div className="w-[85%] lg:w-[80%] mx-auto mt-10 lg:mt-16 mb-2 relative">
+      <div className="w-[90%] md:w-[85%] lg:w-[80%] mx-auto mt-6 md:mt-10 lg:mt-16 mb-2 relative">
         {/* Close button - circle outline */}
         <button className="absolute top-4 right-4 w-[24px] h-[24px] rounded-full border-2 border-white bg-transparent" />
 
         {/* User info */}
-        <div className="flex items-center gap-3.5">
-          <div className=" flex items-center justify-center">
-            <IoLocationSharp size={46} className="text-white" />
+        <div className="flex items-center gap-2.5 md:gap-3.5">
+          <div className="flex items-center justify-center">
+            <IoLocationSharp className="text-white text-[32px] md:text-[46px]" />
           </div>
           <div>
-            <p className="font-bold text-white text-[18px] leading-tight">
+            <p className="font-bold text-white text-[15px] md:text-[18px] leading-tight">
               {userName}
             </p>
-            <p className="text-white/75 text-sm mt-0.5">
+            <p className="text-white/75 text-xs md:text-sm mt-0.5">
               {userSubtext || "Select an address"}
             </p>
           </div>
@@ -155,28 +155,28 @@ function DesktopAddressStep({ onOk }: Props) {
       </div>
 
       {/* White bottom card */}
-      <div className="bg-white w-[85%] lg:w-[80%] mx-auto rounded-xl px-4 lg:px-6 pt-5 lg:pt-7 pb-4 lg:pb-6 mb-6">
+      <div className="bg-white w-[90%] md:w-[85%] lg:w-[80%] mx-auto rounded-xl px-4 lg:px-6 pt-5 lg:pt-7 pb-4 lg:pb-6 mb-6">
         {/* Type icons row */}
-        <div className="flex items-start justify-center mb-7">
+        <div className="flex items-start justify-center mb-5 md:mb-7">
           {availableTypes.map((type, idx) => (
             <button
               key={type}
               onClick={() => handleTypeSelect(type)}
-              className={`flex-1 flex flex-col items-center cursor-pointer gap-2.5 px-3 ${
+              className={`flex-1 flex flex-col items-center cursor-pointer gap-1.5 md:gap-2.5 px-2 md:px-3 ${
                 idx < availableTypes.length - 1
                   ? "border-r border-gray-200"
                   : ""
               }`}
             >
               <div
-                className={`w-[60px] h-[60px] lg:w-[76px] lg:h-[76px] rounded-full bg-gray-100 flex items-center justify-center transition ${
-                  activeType === type ? "text-[#782FF8]" : " text-gray-900"
+                className={`w-[48px] h-[48px] md:w-[60px] md:h-[60px] lg:w-[76px] lg:h-[76px] rounded-full bg-gray-100 flex items-center justify-center transition ${
+                  activeType === type ? "text-[#782FF8]" : "text-gray-900"
                 }`}
               >
                 {getTypeIcon(type)}
               </div>
               <span
-                className={`text-sm font-medium transition ${
+                className={`text-xs md:text-sm font-medium transition ${
                   activeType === type ? "text-[#782FF8]" : "text-gray-900"
                 }`}
               >
@@ -186,13 +186,13 @@ function DesktopAddressStep({ onOk }: Props) {
           ))}
 
           {/* Add New */}
-          <button className="flex-1 flex flex-col items-center gap-2.5 px-3">
-            <div className="w-[60px] h-[60px] lg:w-[76px] lg:h-[76px] rounded-full bg-gray-100 flex items-center justify-center">
-              <div className="w-9 h-9 rounded-full bg-gray-900 flex items-center justify-center">
-                <FaPlus size={25} className="text-white" />
+          <button className="flex-1 flex flex-col items-center gap-1.5 md:gap-2.5 px-2 md:px-3">
+            <div className="w-[48px] h-[48px] md:w-[60px] md:h-[60px] lg:w-[76px] lg:h-[76px] rounded-full bg-gray-100 flex items-center justify-center">
+              <div className="w-7 h-7 md:w-9 md:h-9 rounded-full bg-gray-900 flex items-center justify-center">
+                <FaPlus className="text-white text-[16px] md:text-[25px]" />
               </div>
             </div>
-            <span className="text-sm font-medium text-gray-900">Add New</span>
+            <span className="text-xs md:text-sm font-medium text-gray-900">Add New</span>
           </button>
         </div>
 
@@ -201,7 +201,7 @@ function DesktopAddressStep({ onOk }: Props) {
           <button
             onClick={handleOk}
             disabled={!selectedId}
-            className={`w-full py-4 rounded-xl text-[15px] font-semibold cursor-pointer transition ${
+            className={`w-full py-3 md:py-4 rounded-xl text-[14px] md:text-[15px] font-semibold cursor-pointer transition ${
               selectedId
                 ? "bg-[#782FF8] hover:bg-[#6611EE] text-white"
                 : "bg-gray-200 text-gray-400 cursor-not-allowed"
@@ -212,7 +212,7 @@ function DesktopAddressStep({ onOk }: Props) {
         ) : (
           <button
             onClick={() => setShowList(!showList)}
-            className="w-full py-4 bg-[#782FF8] hover:bg-[#6611EE] text-white rounded-xl text-[15px] font-semibold transition"
+            className="w-full py-3 md:py-4 bg-[#782FF8] hover:bg-[#6611EE] text-white rounded-xl text-[14px] md:text-[15px] font-semibold transition"
           >
             Add {typeLabel} Address
           </button>

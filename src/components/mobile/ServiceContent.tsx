@@ -1,32 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { MdLocationOn, MdStar } from "react-icons/md";
 import { useRouter, useParams } from "next/navigation";
-import { CheckCircle2 } from "lucide-react";
+import { FaCrown } from "react-icons/fa";
+import Image from "next/image";
 import MobileReview from "../reviews/MobileReview";
 import MostPopularServices from "./MostPopularServices";
 import Servicedeatilbanner from "./Servicedeatilbanner";
 import Faq from "./Faq";
 import {
-  getPackages,
   getUserCurrentPackage,
   serviceDeatil,
 } from "@/services/commonapi/commonApi";
-import MobileBookingFlow from "./MobileBookingFlow";
+import DesktopBookingModal from "@/components/bookingmodal/DesktopBookingModal";
 import { showToast } from "@/utils/toast";
 import { getErrorMessage } from "@/services/ErrorHandle";
 
-type PackageType = {
+type CurrentPackageType = {
   id: string;
   tittle: string;
-  description: string;
-  durationType: string;
+  priority: number;
+  type: string;
   features: string[];
   amount: { inr: number; usd: number };
   offerPrice: { inr: number; usd: number };
   gst: { inr: number; usd: number };
   percentage: { inr: number; usd: number };
-  type: string;
-  priority: number;
+  durationType: string;
 };
 
 type ServiceType = {
@@ -49,73 +48,27 @@ type ServiceType = {
   };
 };
 
-function FreePlanTag({
-  price,
-  month,
-  priority,
-}: {
-  price: number;
-  month: string;
-  priority: number;
-}) {
-  const getTagColor = () => {
-    switch (priority) {
-      case 1:
-        return "bg-yellow-500 hover:bg-yellow-600 shadow-yellow-200/50 hover:shadow-yellow-200/60";
-      case 2:
-        return "bg-green-600 hover:bg-green-700 shadow-green-200/50 hover:shadow-green-200/60";
-      case 3:
-        return "bg-green-600 hover:bg-green-700 shadow-green-200/50 hover:shadow-green-200/60";
-      default:
-        return "bg-green-600 hover:bg-green-700 shadow-green-200/50 hover:shadow-green-200/60";
-    }
-  };
-
-  return (
-    <div className="inline-block">
-      <button
-        className={`
-          relative
-          ${getTagColor()}
-          text-white 
-          font-medium 
-          text-xs
-          py-1 
-          px-3 
-          pl-4
-          rounded-r-lg 
-          shadow-md 
-          transition-all 
-          duration-200 
-          hover:shadow-lg 
-          active:scale-95
-          overflow-hidden
-        `}
-        style={{
-          clipPath: "polygon(8px 0%, 100% 0%, 100% 100%, 8px 100%, 0% 50%)",
-        }}
-      >
-        ₹ {price} / {month}
-      </button>
-    </div>
-  );
-}
-
 interface AppProps {
   id: string;
   onBookingStateChange?: (isActive: boolean) => void;
+  onServiceViewChange?: (show: boolean, pkg: CurrentPackageType | null) => void;
 }
-function ServiceContent({ id, onBookingStateChange }: AppProps) {
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const [showSchedule, setShowSchedule] = useState(false);
-  const [packages, setPackages] = useState<PackageType[]>([]);
-  const [currentplan, setCurrentplan] = useState<string | null>(null);
+
+function ServiceContent({ id, onBookingStateChange, onServiceViewChange }: AppProps) {
   const [service, setService] = useState<ServiceType | null>(null);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [countdown, setCountdown] = useState(10);
+  const [currentPackage, setCurrentPackage] = useState<CurrentPackageType | null>(null);
+  const [showServiceView, setShowServiceView] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [isLoadingPackage, setIsLoadingPackage] = useState(false);
   const router = useRouter();
 
   const params = useParams();
   const uniqueId = params.subcategoryId;
+
+  const isPremium = currentPackage?.priority === 1;
+  const planLabel = isPremium ? "Premium" : "Normal";
 
   const handleGetDetails = async () => {
     try {
@@ -133,79 +86,86 @@ function ServiceContent({ id, onBookingStateChange }: AppProps) {
       });
     }
   };
+
   useEffect(() => {
     handleGetDetails();
   }, [uniqueId]);
 
-  const truncateText = (text: string[], maxWords: number = 9) => {
-    const joinedText = text.join(" ");
-    const words = joinedText.split(" ");
-    if (words.length <= maxWords) return joinedText;
-    return words.slice(0, maxWords).join(" ") + "...";
-  };
+  // Lock body scroll when any modal is open
+  useEffect(() => {
+    if (showBookingModal || showPremiumModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showBookingModal, showPremiumModal]);
 
-  const getGradientBg = (priority: number) => {
-    switch (priority) {
-      case 1:
-        return "bg-[linear-gradient(89.88deg,#FFE141_0.1%,#FFFFFF_10.59%)]";
-      case 2:
-        return "bg-[linear-gradient(89.9deg,#00B4EF_0.09%,#FFFFFF_11.91%)]";
-      case 3:
-        return "bg-[linear-gradient(89.88deg,#FF5C02_0.1%,#FFFFFF_10.59%)]";
-      default:
-        return "bg-[linear-gradient(89.9deg,#00B4EF_0.09%,#FFFFFF_11.91%)]";
+  // Auto-close premium modal after 10s with countdown
+  useEffect(() => {
+    if (!showPremiumModal) return;
+    setCountdown(10);
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [showPremiumModal]);
+
+  // When countdown hits 0 while modal is open, auto-continue with normal plan
+  useEffect(() => {
+    if (showPremiumModal && countdown === 0) {
+      handleStartWithNormalPlan();
+    }
+  }, [countdown, showPremiumModal]);
+
+  const handleBookNowClick = async () => {
+    setIsLoadingPackage(true);
+    try {
+      const res = await getUserCurrentPackage();
+      if (res?.success) {
+        setCurrentPackage(res.data);
+        localStorage.setItem("PlanPriority", res.data.priority.toString());
+        if (res.data.priority === 3) {
+          // Not premium - show premium upsell modal
+          setShowPremiumModal(true);
+        } else {
+          // Premium - go directly to service view
+          setShowServiceView(true);
+          onServiceViewChange?.(true, res.data);
+        }
+      }
+    } catch (error) {
+      showToast({
+        type: "error",
+        title: "Error",
+        message: getErrorMessage(error),
+      });
+    } finally {
+      setIsLoadingPackage(false);
     }
   };
 
-  const getBorderColor = (priority: number) => {
-    switch (priority) {
-      case 1:
-        return "border-[#FFE141]";
-      case 2:
-        return "border-[#00B4EF]";
-      case 3:
-        return "border-[#FF5C02]";
-      default:
-        return "border-[#00B4EF]";
-    }
+  // When premium modal closes (either button), show service view
+  const handleStartWithNormalPlan = () => {
+    setShowPremiumModal(false);
+    setShowServiceView(true);
+    onServiceViewChange?.(true, currentPackage);
   };
 
-  useEffect(() => {
-    const fetchPackages = async () => {
-      try {
-        const res = await getPackages();
-        if (res?.success && res?.data?.packages) {
-          setPackages(res.data.packages);
-        }
-      } catch (error) {
-        showToast({
-          type: "error",
-          title: "Error",
-          message: getErrorMessage(error),
-        });
-      }
-    };
-    fetchPackages();
-  }, []);
+  const handleSubscribeNow = () => {
+    setShowPremiumModal(false);
+    setShowBookingModal(true);
+    onBookingStateChange?.(true);
+  };
 
-  useEffect(() => {
-    const fetchCurrentPackages = async () => {
-      try {
-        const res = await getUserCurrentPackage();
-        if (res?.success) {
-          setCurrentplan(res.data.id);
-          setSelectedPlan(res.data.id);
-        }
-      } catch (error) {
-        showToast({
-          type: "error",
-          title: "Error",
-          message: getErrorMessage(error),
-        });
-      }
-    };
-    fetchCurrentPackages();
-  }, []);
   return (
     <div>
       <div className="flex-1 px-4 py-6 bg-white rounded-t-3xl">
@@ -233,138 +193,155 @@ function ServiceContent({ id, onBookingStateChange }: AppProps) {
         <Servicedeatilbanner />
         <hr className=" border-gray-200 " />
         <Faq />
-      </div>
-      <div className="fixed bottom-0 left-0 w-full bg-white  h-[75px] flex items-center z-50">
-        <button
-          onClick={() => {
-            setShowDropdown(!showDropdown);
-            onBookingStateChange?.(!showDropdown);
-          }}
-          className="w-[90%] mx-auto h-[42px] text-white bg-[#7722FF] rounded-xl font-medium text-sm leading-[22px]"
-        >
-          Next
-        </button>
+        {/* Extra padding for fixed bottom buttons */}
+        <div className="h-[90px]" />
       </div>
 
-      {showSchedule && (
-        <div className="fixed inset-0 z-50 bg-white">
-          <MobileBookingFlow
-            selectedPlan={selectedPlan!}
-            subCategoryId={id}
-            onBack={() => {
-              setShowSchedule(false);
-              onBookingStateChange?.(false);
-            }}
-          />
+      {/* Fixed bottom buttons */}
+      {!showBookingModal && (
+        <div className="fixed bottom-0 left-0 w-full bg-white h-auto z-50 pb-4 pt-2 px-4">
+          {!showServiceView ? (
+            <button
+              onClick={handleBookNowClick}
+              disabled={isLoadingPackage}
+              className={`w-full h-[42px] text-white rounded-xl font-medium text-sm leading-[22px] ${
+                isLoadingPackage ? "bg-gray-300 cursor-not-allowed" : "bg-[#7722FF]"
+              }`}
+            >
+              {isLoadingPackage ? "Loading..." : "Next"}
+            </button>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => {
+                  setShowBookingModal(true);
+                  onBookingStateChange?.(true);
+                }}
+                className="w-full h-[42px] bg-gray-900 text-white rounded-xl font-medium text-sm"
+              >
+                Start Bidding
+              </button>
+              <button
+                onClick={() => {
+                  setShowBookingModal(true);
+                  onBookingStateChange?.(true);
+                }}
+                className={`w-full h-[42px] rounded-xl font-medium text-sm ${
+                  isPremium
+                    ? "bg-yellow-400 text-yellow-900"
+                    : "bg-[#782FF8] text-white"
+                }`}
+              >
+                Start with {planLabel} plan 
+              </button>
+            </div>
+          )}
         </div>
       )}
 
-      {showDropdown && !showSchedule && (
-        <>
+      {/* Premium Upsell Modal - exact match from desktop/screenshot */}
+      {showPremiumModal && (
+        <div
+          className="fixed inset-0 bg-white/50 backdrop-blur-sm flex justify-center items-center z-[60]"
+          onClick={() => setShowPremiumModal(false)}
+        >
           <div
-            className="fixed inset-0 z-40 backdrop-blur-sm"
-            onClick={() => {
-              setShowDropdown(false);
-              onBookingStateChange?.(false);
+            onClick={(e) => e.stopPropagation()}
+            className="relative rounded-3xl w-[90%] max-w-[400px] mx-4 text-center overflow-hidden shadow-2xl"
+            style={{
+              backgroundImage: `url('/assets/service/bgpr.png'), linear-gradient(276.6deg, #FFFFFF 1.66%, #FFE141 119.39%)`,
+              backgroundBlendMode: "overlay",
             }}
-          />
-          <div className="fixed bottom-0 left-0 w-full z-50 animate-slide-up">
-            <div className="bg-white shadow-lg rounded-tl-3xl rounded-tr-3xl">
-              <div className="p-3 pt-6 max-h-[70vh] overflow-y-auto overflow-x-hidden">
-                <p className="text-[16px] leading-[24px] font-medium text-left tracking-[0px] pb-1">
-                  Select plan
-                </p>
+          >
+            {/* Countdown */}
+            <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/70 flex items-center justify-center">
+              <span className="text-white text-xs font-bold">{countdown}</span>
+            </div>
 
-                {packages.length > 0 ? (
-                  packages.map((pkg) => (
-                    <div key={pkg.id}>
-                      <div
-                        onClick={() => {
-                          setSelectedPlan(pkg.id);
-                          const selectedPackage = packages.find(
-                            (p) => p.id === pkg.id,
-                          );
-                          if (selectedPackage) {
-                            localStorage.setItem(
-                              "PlanPriority",
-                              selectedPackage.priority.toString(),
-                            );
-                          }
-                        }}
-                        className={`w-full mt-4 h-[120px] ${getGradientBg(pkg.priority)} rounded-lg relative flex items-center cursor-pointer transition-all duration-300
-                        ${selectedPlan === pkg.id ? "shadow-lg transform scale-[1.02]" : "hover:shadow-md"} `}
-                      >
-                        {/* Inner white card with border */}
-                        <div
-                          className={`w-[92%] h-full border-2 ${getBorderColor(pkg.priority)} rounded-lg absolute right-0 bg-white flex items-center px-6 transition-all duration-300 ${selectedPlan === pkg.id ? "border-opacity-100" : "border-opacity-60"}`}
-                        >
-                          <div className="flex w-full justify-between items-center">
-                            {/* Left Content */}
-                            <div>
-                              <h3 className="text-[18px] font-semibold text-gray-900">
-                                {pkg.tittle}
-                              </h3>
-                              <p className="text-gray-500 text-sm leading-5 ">
-                                {truncateText(pkg.features)}
-                              </p>
-                            </div>
+            {/* Premium Badge Icon */}
+            <div className="flex justify-center pt-8 pb-2">
+              <Image src="/assets/service/king.png" alt="Premium" width={100} height={100} />
+            </div>
 
-                            {/* Right Badge */}
-                            <div className="text-white text-xs font-medium absolute top-4 right-4">
-                              <FreePlanTag
-                                price={pkg.offerPrice.inr}
-                                month={pkg.durationType}
-                                priority={pkg.priority}
-                              />
-                            </div>
-                          </div>
-                        </div>
+            {/* Pill Label */}
+            <div className="flex justify-center mt-2 mb-4">
+              <span
+                className="px-6 py-2 text-sm font-semibold text-[#918200] bg-white rounded-full border border-[#918200]"
+                style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.12)" }}
+              >
+                Premium Service
+              </span>
+            </div>
 
-                        {/* Tick Icon (on gradient left) */}
-                        {selectedPlan === pkg.id && (
-                          <div className="absolute left-1 top-2 ">
-                            <CheckCircle2 className="w-6 h-6 text-purple-800" />
-                          </div>
-                        )}
-                        {/* Purchased Tag (if this is current plan) */}
-                        {currentplan === pkg.id && (
-                          <div className="absolute bottom-2 right-4 text-xs font-semibold text-green-600">
-                            Purchased
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-400 text-sm">Loading plans...</p>
-                )}
-              </div>
-              <div className="bg-white w-full flex justify-center items-center p-3">
-                <button
-                  disabled={!selectedPlan}
-                  onClick={() => {
-                    if (selectedPlan) {
-                      const selectedPackage = packages.find(
-                        (pkg) => pkg.id === selectedPlan,
-                      );
-                      if (selectedPackage) {
-                        localStorage.setItem(
-                          "PlanPriority",
-                          selectedPackage.priority.toString(),
-                        );
-                      }
-                      setShowSchedule(true);
-                      onBookingStateChange?.(true);
-                    }
-                  }}
-                  className={`w-[90%] h-[42px] text-white rounded-xl font-medium text-sm transition-all duration-300 ${selectedPlan ? "bg-[#7722FF] hover:bg-[#6611EE]" : "bg-gray-300 cursor-not-allowed"}`}
-                >
-                  Next
-                </button>
-              </div>
+            {/* Price */}
+            <div className="mb-1 pt-4">
+              <span
+                className="font-black text-gray-900"
+                style={{ fontSize: 42, lineHeight: 1, letterSpacing: "-2px" }}
+              >
+                <span style={{ fontSize: 20, verticalAlign: "super", fontWeight: 800 }}>
+                  ₹
+                </span>
+                250.00
+              </span>
+            </div>
+            <p className="text-[#918200] font-medium mb-4" style={{ fontSize: 14 }}>
+              /Month
+            </p>
+
+            {/* Tagline */}
+            <p className="font-poppins font-medium text-[16px] leading-[170%] text-center text-[#121212] mb-6">
+              Premium Experts, Trusted by Thousands
+            </p>
+
+            {/* Subscribe Now Button */}
+            <div className="px-5 mb-4">
+              <button
+                onClick={handleSubscribeNow}
+                className="w-full py-3 rounded-xl font-semibold text-white text-sm cursor-pointer flex items-center justify-center gap-2"
+                style={{
+                  background: "linear-gradient(90deg, #a855f7, #f59e0b)",
+                  border: "none",
+                }}
+              >
+                <FaCrown style={{ fontSize: 14, color: "#FFD700" }} />
+                Subscribe Now
+              </button>
             </div>
           </div>
-        </>
+
+          {/* Start with normal plan - fixed at bottom outside the card */}
+          <div className="fixed bottom-0 left-0 w-full px-4 pb-6">
+            <button
+              onClick={handleStartWithNormalPlan}
+              className="w-full py-4 rounded-xl font-semibold text-white text-sm cursor-pointer"
+              style={{ background: "#111", border: "none" }}
+            >
+              Start with normal plan
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Booking Modal - bottom sheet style for mobile */}
+      {showBookingModal && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-end justify-center"
+          onClick={() => {
+            setShowBookingModal(false);
+            onBookingStateChange?.(false);
+          }}
+        >
+          <div
+            className="w-full max-h-[85vh] overflow-y-auto overscroll-contain"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <DesktopBookingModal
+              subCategoryId={id}
+              selectedPlanId={currentPackage?.id || ""}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
